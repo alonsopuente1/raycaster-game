@@ -6,14 +6,10 @@ LINKFLAGS	= -L./lib -lSDL2main -lSDL2 -lSDL2_image -lm -l:logger64.a
 OUT			= build
 SRC			= src
 
-OBJS = \
-		$(OUT)/main.o\
-		$(OUT)/p_funcs.o\
-		$(OUT)/v_funcs.o\
-		$(OUT)/r_draw.o\
-		$(OUT)/m_map.o\
-		$(OUT)/i_init.o\
-		$(OUT)/settings.o
+# finding all .c files and forming .o filenames
+C_FILES := $(subst src/,$(empty),$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
+OBJS := \
+	$(foreach file,$(C_FILES),$(OUT)/$(file:.c=.o)) \
 
 $(OUT)/RayCaster: $(OBJS)
 	$(CC) -Wall -g $(OBJS) $(LINKFLAGS) -o $(OUT)/RayCaster

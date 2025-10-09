@@ -24,27 +24,27 @@ void P_Rotate(player_t* p, const float ang)
 void P_HandleState(player_t* p, map_t* m, float dt)
 {
     vertex2d_t oldPos = p->pos;
-    if(p->moveState & 0b1) // Player moving forward
+    if(p->moveState & MOVE_FORWARD) // Player moving forward
     {
         P_Move(p, p->moveSpeed * dt);
     }
-    if(p->moveState & 0b10) // Player moving backwards
+    if(p->moveState & MOVE_BACKWARD) // Player moving backwards
     {
         P_Move(p, -p->moveSpeed * dt);
     }
-    if(p->moveState & 0b100) // Player strafing left
+    if(p->moveState & STRAFE_LEFT) // Player strafing left
     {
         P_Strafe(p, p->moveSpeed * dt);
     }
-    if(p->moveState & 0b1000) // Player strafing right
+    if(p->moveState & STRAFE_RIGHT) // Player strafing right
     {
         P_Strafe(p, -p->moveSpeed * dt);
     }
-    if(p->moveState & 0b10000) // Player rotating right
+    if(p->moveState & ROTATE_RIGHT) // Player rotating right
     {
         P_Rotate(p, p->rotateSpeed * dt);
     }
-    if(p->moveState & 0b100000) // Player rotating left
+    if(p->moveState & ROTATE_LEFT) // Player rotating left
     {
         P_Rotate(p, -p->rotateSpeed * dt);
     }
@@ -68,5 +68,20 @@ void P_HandleState(player_t* p, map_t* m, float dt)
         {
             p->pos.y -= deltaPos.y;
         }
+    }
+}
+
+void P_RenderCurrentGun(player_t* p)
+{
+    switch(p->currentGun)
+    {
+        case FISTS:
+            break;
+        case PISTOL:
+            break;
+        case SHOTGUN:
+            break;
+        default:
+            break;
     }
 }

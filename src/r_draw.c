@@ -5,6 +5,7 @@
 #include <float.h>
 #include "p_player.h"
 #include "settings.h"
+#include "t_textures.h"
 #include <stdio.h>
 
 extern SDL_Renderer* gRenderer;
@@ -204,4 +205,15 @@ void R_RenderMap(player_t* p, map_t* map)
     SDL_SetRenderDrawColor(gRenderer, 0xff, 0, 0, 0x33);
     vertex2d_t viewLine2 = V_Add(viewLine, V_Mul(V_GetPerpendicular(V_AngToVec(p->viewAngle)), 10));
     SDL_RenderDrawLine(gRenderer, (int)viewLine.x, (int)viewLine.y, (int)viewLine2.x, (int)viewLine2.y);
+}
+
+void R_RenderCeilingAndFloor(void)
+{
+    SDL_Rect dest = {0, 0, gScreenWidth, gScreenHeight / 2};
+
+    SDL_SetRenderDrawColor(gRenderer, 0x40, 0x40, 0x40, 0xff);
+    SDL_RenderFillRect(gRenderer, &dest);
+    dest.y = gScreenHeight / 2;
+    SDL_SetRenderDrawColor(gRenderer, 0x60, 0x60, 0x60, 0xff);
+    SDL_RenderFillRect(gRenderer, &dest);
 }

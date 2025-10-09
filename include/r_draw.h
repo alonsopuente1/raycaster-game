@@ -6,5 +6,6 @@
 
 extern void R_RenderPlayerView(player_t* p, map_t* map);
 extern void R_RenderMap(player_t* p, map_t* map);
+extern void R_RenderCeilingAndFloor(void);
 
 #endif

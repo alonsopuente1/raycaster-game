@@ -142,15 +142,8 @@ int main(int argc, char** argv)
         E_HandleEvents(dt);
         P_HandleState(&gPlayer, &gMap, dt);
 
-        SDL_Rect dest = {0, 0, gScreenWidth, gScreenHeight / 2};
-
-        SDL_SetRenderDrawColor(gRenderer, 0x40, 0x40, 0x40, 0xff);
-        SDL_RenderFillRect(gRenderer, &dest);
-        dest.y = gScreenHeight / 2;
-        SDL_SetRenderDrawColor(gRenderer, 0x60, 0x60, 0x60, 0xff);
-        SDL_RenderFillRect(gRenderer, &dest);
+        R_RenderCeilingAndFloor();
         R_RenderPlayerView(&gPlayer, &gMap);
-        R_RenderMap(&gPlayer, &gMap);
 
         // printf("PlayerPos: %.2f, %.2f\n", gPlayer.pos.x, gPlayer.pos.y);
 

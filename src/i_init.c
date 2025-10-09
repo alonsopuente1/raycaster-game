@@ -34,24 +34,13 @@ void I_InitLibs()
 
 void I_InitTextures()
 {
-    playerTex = IMG_LoadTexture(gRenderer, "res/textures/player.png");
-    if(playerTex == NULL)
-    {
-        LogMsgf(ERROR, "Failed to load player texture. IMG_ERROR: %s\n", IMG_GetError());
-    }
-
     for(int i = 0; i < NUMTEXTURES; i++)
     {
         gTextures[i] = IMG_LoadTexture(gRenderer, gTexturePaths[i]);
         if(!gTextures[i])
         {
-            LogMsgf(ERROR, "Failed to load texture at path '%s'. IMG_ERROR: %s", IMG_GetError());
+            LogMsgf(ERROR, "Failed to load texture at path '%s'. IMG_ERROR: %s", gTexturePaths[i], IMG_GetError());
         }
-    }
-
-    if(gTextures[0] == NULL)
-    {
-        printf("Failed to load brick texture. IMG_ERROR: %s\n", IMG_GetError());
     }
 }
 
@@ -59,11 +48,15 @@ void I_InitGraphics()
 {
     gWindow	= SDL_CreateWindow("RayCaster", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gScreenWidth, gScreenHeight, 0);
     if(!gWindow)
+    {
         printf("Failed to create window. SDL_ERROR: %s\n", SDL_GetError());
+    }
 
 	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
     if(!gRenderer)
+    {
         printf("Failed to create renderer. SDL_ERROR: %s\n", SDL_GetError());
+    }
 }
 
 void I_InitPlayer()
