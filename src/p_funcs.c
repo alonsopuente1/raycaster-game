@@ -42,9 +42,8 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     
     if(!V_GetMagnitude(newAcc))
     {
-        newAcc = V_Mul(p->vel, -0.2f); // apply friction
+        newAcc = V_Mul(p->vel, -0.1f); // apply friction
     }
-    
     
     p->vel = V_Add(p->vel, newAcc);
     if(V_GetMagnitude(p->vel) > p->maxMoveSpeed)
@@ -78,20 +77,5 @@ void P_HandleState(player_t* p, map_t* m, float dt)
         {
             p->pos.y -= deltaPos.y;
         }
-    }
-}
-
-void P_RenderCurrentGun(player_t* p)
-{
-    switch(p->currentGun)
-    {
-        case FISTS:
-            break;
-        case PISTOL:
-            break;
-        case SHOTGUN:
-            break;
-        default:
-            break;
     }
 }
