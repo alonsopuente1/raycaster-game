@@ -21,7 +21,8 @@ static const char* gTexturePaths[] = {
     "res/textures/env/wood.png",
     "res/textures/env/eagle.png",
     "res/textures/player.png",
-    "res/textures/guns/PIST2.png"
+    "res/textures/guns/PIST2.png",
+    "res/textures/guns/FIST.png"
 };
 
 int NUMTEXTURES = ((int)(sizeof(gTexturePaths) / sizeof(gTexturePaths[0])));

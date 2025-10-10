@@ -5,15 +5,18 @@
 
 typedef struct texture_s
 {
-    int         width;
-    int         height;
-    SDL_Texture*  data;
+    int             width;
+    int             height;
+    SDL_Texture*    data;
+    char            name[32]; // name of the texture (stripped from file path)
 } texture_t;
 
 // Loads a texture from file path. On failure, returns a texture with data = NULL
 extern texture_t T_LoadTexture(const char* path);
 
 extern void T_FreeTexture(texture_t* tex);
+
+extern texture_t* T_FindTexture(const char* texName);
 
 extern texture_t* gTextures;
 

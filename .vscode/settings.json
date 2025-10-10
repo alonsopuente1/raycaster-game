@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "t_textures.h": "c"
+        "t_textures.h": "c",
+        "settings.h": "c",
+        "logger.h": "c"
     }
 }

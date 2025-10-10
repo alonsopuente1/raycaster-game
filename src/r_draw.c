@@ -1,13 +1,15 @@
 #include "r_draw.h"
 
-#include <SDL2/SDL.h>
+#include "i_init.h"
 #include "v_funcs.h"
-#include <float.h>
 #include "p_player.h"
 #include "settings.h"
+#include "logger.h"
 #include "t_textures.h"
+
+#include <SDL2/SDL.h>
+#include <float.h>
 #include <stdio.h>
-#include "i_init.h"
 
 extern SDL_Renderer* gRenderer;
 
@@ -169,6 +171,26 @@ void R_RenderPlayerView(player_t* p, map_t* map)
             SDL_RenderCopy(gRenderer, gTextures[texNum].data, &src, &dest);
         // }
     }
+}
+
+void R_RenderPlayerGun(player_t* p)
+{
+    gun_t gun = p->currentGun;
+    texture_t* weaponTex = NULL;
+
+    if(gun == FISTS)
+    {
+        weaponTex = T_FindTexture("FIST");
+    }
+
+    if(weaponTex == NULL)
+    {
+        LogMsg(WARN, "Can't find weapon texture\n");
+    }
+
+    SDL_Rect dstRect = {gScreenWidth - weaponTex->width, gScreenHeight - weaponTex->height, weaponTex->width, weaponTex->height};
+
+    SDL_RenderCopy(gRenderer, weaponTex->data, NULL, &dstRect);
 }
 
 void R_RenderMap(player_t* p, map_t* map)
