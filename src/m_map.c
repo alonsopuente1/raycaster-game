@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include <stdlib.h>
 #include "string.h"
+#include "logger.h"
 
 map_t M_LoadMap(const char* filePath)
 {
@@ -13,7 +14,7 @@ map_t M_LoadMap(const char* filePath)
 
     if(!file)
     {
-        printf("Failed to open map file: %s\n", filePath);
+        LogMsgf(ERROR, "Failed to open map file: %s\n", filePath);
         return out;
     }
 
@@ -24,7 +25,7 @@ map_t M_LoadMap(const char* filePath)
 
     if(!out.mapData)
     {
-        printf("Failed to allocate memory for map data\n");
+        LogMsg(ERROR, "Failed to allocate memory for map data\n");
         return out;
     }
 

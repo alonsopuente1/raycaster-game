@@ -95,7 +95,7 @@ void E_HandleEvents(float dt)
 
 int main(int argc, char** argv)
 {
-    printf("Hello, World!\n");
+    LogMsg(DEBUG, "Starting RayCaster...\n");
 
     if(argc < 2)
     {
@@ -114,7 +114,7 @@ int main(int argc, char** argv)
 
     if(gMap.mapData == NULL)
     {
-        printf("Failed to load map\n"); 
+        LogMsg(ERROR, "Failed to load map\n"); 
         return -1;
     }
 

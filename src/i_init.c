@@ -78,13 +78,13 @@ void I_InitGraphics()
     gWindow	= SDL_CreateWindow("RayCaster", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gScreenWidth, gScreenHeight, 0);
     if(!gWindow)
     {
-        printf("Failed to create window. SDL_ERROR: %s\n", SDL_GetError());
+        LogMsgf(ERROR, "Failed to create window. SDL_ERROR: %s\n", SDL_GetError());
     }
 
 	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
     if(!gRenderer)
     {
-        printf("Failed to create renderer. SDL_ERROR: %s\n", SDL_GetError());
+        LogMsgf(ERROR, "Failed to create renderer. SDL_ERROR: %s\n", SDL_GetError());
     }
 }
 
