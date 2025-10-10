@@ -16,9 +16,13 @@ typedef enum movestateBitmask_e
 
 typedef struct player_s
 {
-    vertex2d_t      pos;
     float           viewAngle;
-    float           moveSpeed;
+    float           maxMoveSpeed;
+    
+    vertex2d_t      acc;
+    vertex2d_t      vel;
+    vertex2d_t      pos;
+
     float           rotateSpeed;
     char            moveState;  // first bit = forward, second bit = backward, third bit = left, fourth bit = right, fifth bit = rotate right, sixth bit = rotate left
     gun_t           currentGun; 

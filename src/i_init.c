@@ -92,7 +92,7 @@ void I_InitPlayer()
 {
     gPlayer.pos         = V_Make(4.0f, 4.0f);
     gPlayer.viewAngle   = 0.0f;
-    gPlayer.moveSpeed   = MOVESPEED;
+    gPlayer.maxMoveSpeed= MOVESPEED;
     gPlayer.rotateSpeed = ROTATESPEED;
 }
 
