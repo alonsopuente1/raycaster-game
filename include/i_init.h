@@ -7,4 +7,6 @@ extern void I_InitGraphics();
 extern void I_InitPlayer();
 extern void I_CleanUp();
 
+extern int NUMTEXTURES;
+
 #endif

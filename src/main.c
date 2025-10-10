@@ -10,6 +10,7 @@
 #include "v_funcs.h"
 #include "r_draw.h"
 #include "m_map.h"
+#include "t_textures.h"
 #include "settings.h"
 #include "i_init.h"
 #include "logger.h"
@@ -27,8 +28,6 @@ player_t gPlayer;
 SDL_Texture* playerTex;
 
 bool shouldClose = false;
-
-SDL_Texture* gTextures[NUMTEXTURES];
 
 void E_HandleEvents(float dt)
 {

@@ -6,7 +6,7 @@ LINKFLAGS	= -L./lib -lSDL2main -lSDL2 -lSDL2_image -lm -l:logger64.a
 OUT			= build
 SRC			= src
 
-# finding all .c files and forming .o filenames
+# finding all .c files and forming target .o filenames
 C_FILES := $(subst src/,$(empty),$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
 OBJS := \
 	$(foreach file,$(C_FILES),$(OUT)/$(file:.c=.o)) \

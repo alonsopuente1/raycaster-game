@@ -8,6 +8,23 @@
 #include "m_map.h"
 #include "logger.h"
 #include <stdio.h>
+#include "t_textures.h"
+
+// File paths for all textures to be loaded
+static const char* gTexturePaths[] = {
+    "res/textures/env/bluestone.png",
+    "res/textures/env/colorstone.png",
+    "res/textures/env/greystone.png",
+    "res/textures/env/mossy.png",
+    "res/textures/env/purplestone.png",
+    "res/textures/env/redbrick.png",
+    "res/textures/env/wood.png",
+    "res/textures/env/eagle.png",
+    "res/textures/player.png",
+    "res/textures/guns/PIST2.png"
+};
+
+int NUMTEXTURES = ((int)(sizeof(gTexturePaths) / sizeof(gTexturePaths[0])));
 
 extern int gScreenWidth;
 extern int gScreenHeight;
@@ -16,7 +33,6 @@ extern SDL_Renderer* gRenderer;
 extern player_t gPlayer;
 extern map_t gMap;
 extern SDL_Texture* playerTex;
-extern SDL_Texture* gTextures[NUMTEXTURES];
 
 void I_InitLibs()
 {
@@ -34,10 +50,23 @@ void I_InitLibs()
 
 void I_InitTextures()
 {
+    if(gTextures)
+    {
+        LogMsg(WARN, "Textures already initialised! Skipping...");
+        return;
+    }
+
+    gTextures = malloc(sizeof(texture_t) * NUMTEXTURES);
+    if(!gTextures)
+    {
+        LogMsg(ERROR, "Failed to allocate memory for textures array!");
+        exit(-1);
+    }
+
     for(int i = 0; i < NUMTEXTURES; i++)
     {
-        gTextures[i] = IMG_LoadTexture(gRenderer, gTexturePaths[i]);
-        if(!gTextures[i])
+        gTextures[i] = T_LoadTexture(gTexturePaths[i]);
+        if(gTextures[i].data == NULL)
         {
             LogMsgf(ERROR, "Failed to load texture at path '%s'. IMG_ERROR: %s", gTexturePaths[i], IMG_GetError());
         }
@@ -73,8 +102,11 @@ void I_CleanUp()
 
     for(int i = 0; i < NUMTEXTURES; i++)
     {
-        SDL_DestroyTexture(gTextures[i]);
+        T_FreeTexture(&gTextures[i]);
     }
+
+    if(gTextures)
+        free(gTextures);
 
     FreeLogs();
 

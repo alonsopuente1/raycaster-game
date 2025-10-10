@@ -7,6 +7,7 @@
 #include "settings.h"
 #include "t_textures.h"
 #include <stdio.h>
+#include "i_init.h"
 
 extern SDL_Renderer* gRenderer;
 
@@ -14,7 +15,6 @@ extern int gScreenWidth;
 extern int gScreenHeight;
 
 extern SDL_Texture* playerTex;
-extern SDL_Texture* gTextures[NUMTEXTURES];
 
 void R_RenderPlayerView(player_t* p, map_t* map)
 {
@@ -133,8 +133,12 @@ void R_RenderPlayerView(player_t* p, map_t* map)
             colour.g /= 2;
             colour.b /= 2;
         }
-
+        
+        // index into the texture array 
         int texNum = map->mapData[mapY * map->mapHeight + mapX] - 1;
+
+        if(texNum < 0 || texNum >= NUMTEXTURES)
+            texNum = 0;
 
         // if(texNum > 0)
         // {
@@ -155,14 +159,14 @@ void R_RenderPlayerView(player_t* p, map_t* map)
             }
             wallX -= floor(wallX);
 
-            int texX = (int)(wallX * (double)TEXWIDTH);
-            if(side == 0 && rayDir.x > 0) texX = TEXWIDTH - texX - 1;
-            if(side == 1 && rayDir.y < 0) texX = TEXWIDTH - texX - 1;
+            int texX = (int)(wallX * (double)gTextures[texNum].width);
+            if(side == 0 && rayDir.x > 0) texX = gTextures[texNum].width - texX - 1;
+            if(side == 1 && rayDir.y < 0) texX = gTextures[texNum].width - texX - 1;
 
-            SDL_Rect src = {texX, 0, 1, TEXHEIGHT};
+            SDL_Rect src = {texX, 0, 1, gTextures[texNum].height};
             SDL_Rect dest = {x, drawStart, 1, lineHeight};        
 
-            SDL_RenderCopy(gRenderer, gTextures[texNum], &src, &dest);
+            SDL_RenderCopy(gRenderer, gTextures[texNum].data, &src, &dest);
         // }
     }
 }
