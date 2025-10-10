@@ -25,7 +25,10 @@ typedef struct player_s
 
     float           rotateSpeed;
     char            moveState;  // first bit = forward, second bit = backward, third bit = left, fourth bit = right, fifth bit = rotate right, sixth bit = rotate left
+    
     gun_t           currentGun; 
+    float           gunSway;
+
 } player_t;
 
 #endif

@@ -55,6 +55,10 @@ void P_HandleState(player_t* p, map_t* m, float dt)
         return;
     }
 
+    p->gunSway += V_GetMagnitude(p->vel) * dt;
+    while(p->gunSway > acosf(-1) * 2)
+        p->gunSway -= acosf(-1) * 2;
+
     p->pos = V_Add(p->pos, V_Mul(p->vel, dt));
     vertex2d_t deltaPos = V_Sub(p->pos, oldPos);
 

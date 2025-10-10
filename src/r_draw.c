@@ -188,9 +188,22 @@ void R_RenderPlayerGun(player_t* p)
         LogMsg(WARN, "Can't find weapon texture\n");
     }
 
-    SDL_Rect dstRect = {gScreenWidth - weaponTex->width, gScreenHeight - weaponTex->height, weaponTex->width, weaponTex->height};
 
-    SDL_RenderCopy(gRenderer, weaponTex->data, NULL, &dstRect);
+    float ratio = gScreenWidth / (2 * weaponTex->width); 
+    SDL_FRect dstRect = {(float)gScreenWidth * 0.6f, gScreenHeight - (weaponTex->height * ratio) + weaponTex->height * 0.3f, weaponTex->width * ratio, weaponTex->height * ratio};
+
+    // SDL_SetRenderDrawColor(gRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+    // SDL_RenderDrawRectF(gRenderer, &dstRect);
+    
+    dstRect.x += sinf(p->gunSway) * weaponTex->width * 0.5f;
+    if(p->gunSway > acos(-1))
+        dstRect.y -= sinf(p->gunSway - acos(-1)) * weaponTex->height * 0.3f;
+    else
+        dstRect.y -= sinf(p->gunSway) * weaponTex->height * 0.3f;
+    
+    SDL_RenderCopyF(gRenderer, weaponTex->data, NULL, &dstRect);
+
+
 }
 
 void R_RenderMap(player_t* p, map_t* map)

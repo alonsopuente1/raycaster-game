@@ -90,6 +90,12 @@ void E_HandleEvents(float dt)
 
         P_Rotate(&gPlayer, deltaX * gPlayer.rotateSpeed * dt);
         SDL_WarpMouseInWindow(gWindow, gScreenWidth / 2, gScreenHeight / 2);
+
+        SDL_ShowCursor(SDL_DISABLE);
+    }
+    else
+    {
+        SDL_ShowCursor(SDL_ENABLE);
     }
 }
 
