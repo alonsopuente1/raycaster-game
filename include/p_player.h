@@ -2,7 +2,7 @@
 #define __PLAYER_H__
 
 #include "v_vert.h"
-#include "w_guns.h"
+#include "g_guns.h"
 
 typedef enum movestateBitmask_e
 {

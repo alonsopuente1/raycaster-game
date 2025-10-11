@@ -1,5 +1,5 @@
-#ifndef __W_GUNS_H__
-#define __W_GUNS_H__
+#ifndef __G_GUNS_H__
+#define __G_GUNS_H__
 
 typedef enum gun_e 
 {

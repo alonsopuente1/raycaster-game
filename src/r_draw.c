@@ -1,20 +1,19 @@
 #include "r_draw.h"
 
-#include "i_init.h"
-#include "v_funcs.h"
-#include "p_player.h"
-#include "settings.h"
-#include "logger.h"
-#include "t_textures.h"
-
 #include <SDL2/SDL.h>
 #include <float.h>
 #include <stdio.h>
 
-extern SDL_Renderer* gRenderer;
+#include "i_init.h"
+#include "v_funcs.h"
+#include "p_player.h"
+#include "settings.h"
+#include "t_textures.h"
+#include "w_window.h"
 
-extern int gScreenWidth;
-extern int gScreenHeight;
+#include "logger.h"
+
+extern window_t gMainWindow;
 
 extern SDL_Texture* playerTex;
 
@@ -27,9 +26,9 @@ void R_RenderPlayerView(player_t* p, map_t* map)
     playerDir   = V_AngToVec(p->viewAngle);
     plane       = V_Mul(V_Normalise(V_GetPerpendicular(playerDir)), -1);
 
-    for(x = 0; x < gScreenWidth; x++)
+    for(x = 0; x < gMainWindow.width; x++)
     {
-        float cameraX = (float)x / (float)gScreenWidth * 2.0f - 1.0f;
+        float cameraX = (float)x / (float)gMainWindow.width * 2.0f - 1.0f;
         vertex2d_t rayDir = V_Add(playerDir, V_Mul(plane, cameraX));
 
         int mapX = (int)p->pos.x;
@@ -90,9 +89,9 @@ void R_RenderPlayerView(player_t* p, map_t* map)
         if(side == 0)   perpWallDist = (sideDist.x - deltaDist.x);
         else            perpWallDist = (sideDist.y - deltaDist.y);
 
-        int lineHeight = (int)((float)gScreenHeight / perpWallDist);
+        int lineHeight = (int)((float)gMainWindow.height / perpWallDist);
 
-        int drawStart = -lineHeight / 2 + gScreenHeight / 2;
+        int drawStart = -lineHeight / 2 + gMainWindow.height / 2;
 
         SDL_Colour colour = {0};
         switch(map->mapData[mapY * map->mapHeight + mapX])
@@ -144,8 +143,8 @@ void R_RenderPlayerView(player_t* p, map_t* map)
 
         // if(texNum > 0)
         // {
-        //     SDL_SetRenderDrawColor(gRenderer, colour.r, colour.g, colour.b, 0xff);
-        //     SDL_RenderDrawLine(gRenderer, x, drawStart, x, drawEnd);
+        //     SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, colour.r, colour.g, colour.b, 0xff);
+        //     SDL_RenderDrawLine(gMainWindow.sdlRenderer, x, drawStart, x, drawEnd);
         // }
         // else
         // {
@@ -168,7 +167,7 @@ void R_RenderPlayerView(player_t* p, map_t* map)
             SDL_Rect src = {texX, 0, 1, gTextures[texNum].height};
             SDL_Rect dest = {x, drawStart, 1, lineHeight};        
 
-            SDL_RenderCopy(gRenderer, gTextures[texNum].data, &src, &dest);
+            SDL_RenderCopy(gMainWindow.sdlRenderer, gTextures[texNum].data, &src, &dest);
         // }
     }
 }
@@ -188,11 +187,11 @@ void R_RenderPlayerGun(player_t* p)
         LogMsg(WARN, "Can't find weapon texture\n");
     }
 
-    float ratio = gScreenWidth / (2 * weaponTex->width); 
+    float ratio = gMainWindow.width / (2 * weaponTex->width); 
 
     vertex2d_t newTexDim = {weaponTex->width * ratio, weaponTex->height * ratio};
 
-    SDL_FRect dstRect = {(float)gScreenWidth * 0.6f - newTexDim.x * 0.5f, gScreenHeight - newTexDim.y * 0.7f, newTexDim.x, newTexDim.y};
+    SDL_FRect dstRect = {(float)gMainWindow.width * 0.6f - newTexDim.x * 0.5f, gMainWindow.height - newTexDim.y * 0.7f, newTexDim.x, newTexDim.y};
 
     dstRect.x += sinf(p->gunSway) * weaponTex->width * 0.5f;
     if(p->gunSway > acos(-1))
@@ -200,10 +199,10 @@ void R_RenderPlayerGun(player_t* p)
     else
         dstRect.y -= sinf(p->gunSway) * weaponTex->height * 0.3f * ratio;
     
-    SDL_SetRenderDrawColor(gRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawRectF(gRenderer, &dstRect);
+    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawRectF(gMainWindow.sdlRenderer, &dstRect);
     
-    SDL_RenderCopyF(gRenderer, weaponTex->data, NULL, &dstRect);
+    SDL_RenderCopyF(gMainWindow.sdlRenderer, weaponTex->data, NULL, &dstRect);
 }
 
 void R_RenderMap(player_t* p, map_t* map)
@@ -213,46 +212,50 @@ void R_RenderMap(player_t* p, map_t* map)
     int         x;
     int         y;
 
-    rectWidth   = gScreenWidth / map->mapHeight;
-    rectHeight  = gScreenHeight / map->mapWidth;
+    rectWidth   = gMainWindow.height / map->mapHeight;
+    rectHeight  = gMainWindow.width / map->mapWidth;
 
-    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_BLEND);
     for(y = 0; y < map->mapHeight; y++)
     {
         for(x = 0; x < map->mapWidth; x++)
         {
             SDL_Rect rect = {x * rectWidth, y * rectHeight, rectWidth, rectHeight};
             if(map->mapData[y * map->mapHeight + x])
-                SDL_SetRenderDrawColor(gRenderer, 0, 0, 0xff, 0x33);
+                SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0xff, 0x33);
             else
-                SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0x33);
-            SDL_RenderFillRect(gRenderer, &rect);
+                SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0x33);
+            SDL_RenderFillRect(gMainWindow.sdlRenderer, &rect);
         }
     }
-    SDL_SetRenderDrawBlendMode(gRenderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_NONE);
 
-    vertex2d_t screenPos = {(gScreenWidth * (p->pos.x / (float)map->mapWidth) ) - 5.f, (gScreenHeight * (p->pos.y / (float)map->mapHeight)) - 5.f};
+    vertex2d_t screenPos = {(gMainWindow.width * (p->pos.x / (float)map->mapWidth) ) - 5.f, (gMainWindow.height * (p->pos.y / (float)map->mapHeight)) - 5.f};
     SDL_Rect dest = {screenPos.x, screenPos.y, 10, 10};
-    SDL_RenderCopy(gRenderer, playerTex, NULL, &dest);
+    SDL_RenderCopy(gMainWindow.sdlRenderer, playerTex, NULL, &dest);
 
-    SDL_SetRenderDrawColor(gRenderer, 0, 0xff, 0, 0x33);
+    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0xff, 0, 0x33);
     
     vertex2d_t viewLine = V_Add(V_Mul(V_AngToVec(p->viewAngle), 10), screenPos);
 
-    SDL_RenderDrawLine(gRenderer, (int)screenPos.x, (int)screenPos.y, (int)viewLine.x, (int)viewLine.y);
+    SDL_RenderDrawLine(gMainWindow.sdlRenderer, (int)screenPos.x, (int)screenPos.y, (int)viewLine.x, (int)viewLine.y);
 
-    SDL_SetRenderDrawColor(gRenderer, 0xff, 0, 0, 0x33);
+    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0xff, 0, 0, 0x33);
     vertex2d_t viewLine2 = V_Add(viewLine, V_Mul(V_GetPerpendicular(V_AngToVec(p->viewAngle)), 10));
-    SDL_RenderDrawLine(gRenderer, (int)viewLine.x, (int)viewLine.y, (int)viewLine2.x, (int)viewLine2.y);
+    SDL_RenderDrawLine(gMainWindow.sdlRenderer, (int)viewLine.x, (int)viewLine.y, (int)viewLine2.x, (int)viewLine2.y);
 }
 
 void R_RenderCeilingAndFloor(void)
 {
-    SDL_Rect dest = {0, 0, gScreenWidth, gScreenHeight / 2};
+    SDL_Rect dest = {0, 0, gMainWindow.width, gMainWindow.height / 2};
 
-    SDL_SetRenderDrawColor(gRenderer, 0x40, 0x40, 0x40, 0xff);
-    SDL_RenderFillRect(gRenderer, &dest);
-    dest.y = gScreenHeight / 2;
-    SDL_SetRenderDrawColor(gRenderer, 0x60, 0x60, 0x60, 0xff);
-    SDL_RenderFillRect(gRenderer, &dest);
+    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0x40, 0x40, 0x40, 0xff);
+    SDL_RenderFillRect(gMainWindow.sdlRenderer, &dest);
+    dest.y = gMainWindow.height / 2;
+    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0x60, 0x60, 0x60, 0xff);
+    SDL_RenderFillRect(gMainWindow.sdlRenderer, &dest);
+}
+
+void R_RenderCircleFromTexture(texture_t* tex, vertex2d_t texPos, float texRadius, vertex2d_t screenPos, float screenRadius)
+{
 }

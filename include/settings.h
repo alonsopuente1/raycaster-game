@@ -7,10 +7,6 @@
 #define MOVESPEED   0.005
 #define ROTATESPEED 0.002
 
-typedef enum
-{
-    false = 0,
-    true = 1
-} bool;
+#include <stdbool.h>
 
 #endif

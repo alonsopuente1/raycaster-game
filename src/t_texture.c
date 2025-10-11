@@ -1,10 +1,13 @@
 #include "t_textures.h"
 
-#include "logger.h"
 #include <SDL2/SDL_image.h>
-#include "settings.h"
 
-extern SDL_Renderer* gRenderer;
+#include "settings.h"
+#include "w_window.h"
+
+#include "logger.h"
+
+extern window_t gMainWindow;
 
 texture_t* gTextures;
 
@@ -32,7 +35,7 @@ void fileNameFromPath(const char* path, char* outName, int maxLen)
 texture_t T_LoadTexture(const char* path)
 {
     texture_t tex;
-    tex.data = IMG_LoadTexture(gRenderer, path);
+    tex.data = IMG_LoadTexture(gMainWindow.sdlRenderer, path);
     if(!tex.data)
     {
         LogMsgf(ERROR, "Failed to load texture at path '%s'. IMG_ERROR: %s", path, IMG_GetError());

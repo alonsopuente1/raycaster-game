@@ -2,13 +2,16 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <stdio.h>
+
 #include "settings.h"
 #include "p_player.h"
 #include "v_funcs.h"
 #include "m_map.h"
-#include "logger.h"
-#include <stdio.h>
 #include "t_textures.h"
+#include "w_window.h"
+
+#include "logger.h"
 
 // File paths for all textures to be loaded
 static const char* gTexturePaths[] = {
@@ -27,10 +30,7 @@ static const char* gTexturePaths[] = {
 
 int NUMTEXTURES = ((int)(sizeof(gTexturePaths) / sizeof(gTexturePaths[0])));
 
-extern int gScreenWidth;
-extern int gScreenHeight;
-extern SDL_Window* gWindow;
-extern SDL_Renderer* gRenderer;
+extern window_t gMainWindow;
 extern player_t gPlayer;
 extern map_t gMap;
 extern SDL_Texture* playerTex;
@@ -39,12 +39,12 @@ void I_InitLibs()
 {
     if(!IMG_Init(IMG_INIT_PNG))
     {
-        LogMsgf(ERROR, "Failed to initialise SDL_image. Error: %s Getting out of here...", IMG_GetError());
+        LogMsgf(ERROR, "Failed to initialise SDL_image. Error: %s\n\tGetting out of here...\n", IMG_GetError());
         exit(-1);
     }
     if(SDL_Init(SDL_INIT_EVERYTHING) < 0)
     {
-        LogMsgf(ERROR, "Failed to init SDL2. SDL_ERROR: %s\n Getting out of here...", SDL_GetError());
+        LogMsgf(ERROR, "Failed to init SDL2. SDL_ERROR: %s\n\tGetting out of here...\n", SDL_GetError());
         exit(-1);
     }
 }
@@ -53,14 +53,14 @@ void I_InitTextures()
 {
     if(gTextures)
     {
-        LogMsg(WARN, "Textures already initialised! Skipping...");
+        LogMsg(WARN, "Textures already initialised! Skipping...\n");
         return;
     }
 
     gTextures = malloc(sizeof(texture_t) * NUMTEXTURES);
     if(!gTextures)
     {
-        LogMsg(ERROR, "Failed to allocate memory for textures array!");
+        LogMsg(ERROR, "Failed to allocate memory for textures array!\n");
         exit(-1);
     }
 
@@ -69,23 +69,17 @@ void I_InitTextures()
         gTextures[i] = T_LoadTexture(gTexturePaths[i]);
         if(gTextures[i].data == NULL)
         {
-            LogMsgf(ERROR, "Failed to load texture at path '%s'. IMG_ERROR: %s", gTexturePaths[i], IMG_GetError());
+            LogMsgf(ERROR, "Failed to load texture at path '%s'. IMG_ERROR: %s\n", gTexturePaths[i], IMG_GetError());
         }
     }
 }
 
 void I_InitGraphics()
 {
-    gWindow	= SDL_CreateWindow("RayCaster", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, gScreenWidth, gScreenHeight, 0);
-    if(!gWindow)
+    if(!W_InitWindow(&gMainWindow, "RayCaster", 1280, 720))
     {
-        LogMsgf(ERROR, "Failed to create window. SDL_ERROR: %s\n", SDL_GetError());
-    }
-
-	gRenderer = SDL_CreateRenderer(gWindow, -1, 0);
-    if(!gRenderer)
-    {
-        LogMsgf(ERROR, "Failed to create renderer. SDL_ERROR: %s\n", SDL_GetError());
+        LogMsg(ERROR, "FATAL: failed to create main window\n");
+        exit(-1);
     }
 }
 
@@ -101,20 +95,17 @@ void I_CleanUp()
 {
     M_Free(gMap);
 
-    for(int i = 0; i < NUMTEXTURES; i++)
-    {
-        T_FreeTexture(&gTextures[i]);
-    }
-
     if(gTextures)
+    {
+        for(int i = 0; i < NUMTEXTURES; i++)
+            T_FreeTexture(&gTextures[i]);
         free(gTextures);
+    }
 
     FreeLogs();
 
     SDL_DestroyTexture(playerTex);
 
-    SDL_DestroyRenderer(gRenderer);
-    SDL_DestroyWindow(gWindow);
     IMG_Quit();
     SDL_Quit();
 }

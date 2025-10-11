@@ -6,6 +6,7 @@
 
 #include "p_player.h"
 #include "p_funcs.h"
+#include "w_window.h"
 #include "v_vert.h"
 #include "v_funcs.h"
 #include "r_draw.h"
@@ -15,11 +16,7 @@
 #include "i_init.h"
 #include "logger.h"
 
-int gScreenWidth     = 1280;
-int gScreenHeight    = 720;
-
-SDL_Window*     gWindow;
-SDL_Renderer*   gRenderer;
+window_t gMainWindow;
 
 map_t gMap;
 
@@ -79,17 +76,17 @@ void E_HandleEvents(float dt)
     else
         gPlayer.moveState &= ~(1 << 5);
     
-    Uint32 flags = SDL_GetWindowFlags(gWindow);
+    Uint32 flags = SDL_GetWindowFlags(gMainWindow.sdlWindow);
 
     if(flags & SDL_WINDOW_INPUT_FOCUS)
     {
         int x, _;
         SDL_GetMouseState(&x, &_);
 
-        int deltaX = x - gScreenWidth / 2;
+        int deltaX = x - gMainWindow.width / 2;
 
         P_Rotate(&gPlayer, deltaX * gPlayer.rotateSpeed * dt);
-        SDL_WarpMouseInWindow(gWindow, gScreenWidth / 2, gScreenHeight / 2);
+        SDL_WarpMouseInWindow(gMainWindow.sdlWindow, gMainWindow.width / 2, gMainWindow.height / 2);
 
         SDL_ShowCursor(SDL_DISABLE);
     }
@@ -137,11 +134,11 @@ int main(int argc, char** argv)
         char newTitle[64];
         snprintf(newTitle, 64, "RayCaster %.0ffps", fps);
                 
-        SDL_SetWindowTitle(gWindow, newTitle);
+        SDL_SetWindowTitle(gMainWindow.sdlWindow, newTitle);
 
         // Clear screen
-        SDL_SetRenderDrawColor(gRenderer, 0, 0, 0, 0xff);
-        SDL_RenderClear(gRenderer);
+        SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0xff);
+        SDL_RenderClear(gMainWindow.sdlRenderer);
 
         // Main loop
         E_HandleEvents(dt);
@@ -154,7 +151,7 @@ int main(int argc, char** argv)
         // printf("PlayerPos: %.2f, %.2f\n", gPlayer.pos.x, gPlayer.pos.y);
 
         // Present
-        SDL_RenderPresent(gRenderer);
+        SDL_RenderPresent(gMainWindow.sdlRenderer);
 
     }
 
