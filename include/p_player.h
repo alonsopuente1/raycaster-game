@@ -29,6 +29,9 @@ typedef struct player_s
     gun_t           currentGun; 
     float           gunSway;
 
+    // stored in milliseconds
+    float           footstepSoundCooldown;
+
 } player_t;
 
 #endif

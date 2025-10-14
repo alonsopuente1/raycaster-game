@@ -2,6 +2,12 @@
 #include "v_funcs.h"
 #include "m_map.h"
 
+#include <stdbool.h>
+#include <SDL2/SDL_mixer.h>
+
+extern Mix_Chunk* gFootstep1;
+extern Mix_Chunk* gFootstep2;
+
 void P_Move(player_t* p, const float speed)
 {
     vertex2d_t viewVec = {cos(p->viewAngle), sin(p->viewAngle)};
@@ -57,6 +63,17 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     p->gunSway += V_GetMagnitude(p->vel) * dt;
     while(p->gunSway > acosf(-1) * 2)
         p->gunSway -= acosf(-1) * 2;
+
+    if(p->footstepSoundCooldown > -1000.f)
+        p->footstepSoundCooldown -= dt;
+
+    static bool sound = false;
+    if(V_GetMagnitude(p->vel) > 0.00007f && p->footstepSoundCooldown < 0)
+    {
+        p->footstepSoundCooldown = 500.f;
+        sound ? Mix_PlayChannel(-1, gFootstep1, 0) : Mix_PlayChannel(-1, gFootstep2, 0);
+        sound = !sound;
+    }
 
     p->pos = V_Add(p->pos, V_Mul(p->vel, dt));
     vertex2d_t deltaPos = V_Sub(p->pos, oldPos);

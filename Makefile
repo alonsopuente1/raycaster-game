@@ -1,7 +1,7 @@
 CC 			= gcc
 
 CFLAGS		= -I./include -Wextra -Wall -pedantic
-LINKFLAGS	= -L./lib -lSDL2main -lSDL2 -lSDL2_image -lm -l:logger64.a
+LINKFLAGS	= -L./lib -lSDL2main -l:libSDL2_mixer.a -lWinmm -lSDL2 -lSDL2_image -lm -l:logger64.a 
 
 OUT			= build
 SRC			= src
@@ -10,6 +10,8 @@ SRC			= src
 C_FILES := $(subst src/,$(empty),$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
 OBJS := \
 	$(foreach file,$(C_FILES),$(OUT)/$(file:.c=.o)) \
+
+all: $(OUT)/RayCaster
 
 $(OUT)/RayCaster: $(OBJS)
 	$(CC) -Wall -g $(OBJS) $(LINKFLAGS) -o $(OUT)/RayCaster

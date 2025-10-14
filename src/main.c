@@ -1,5 +1,6 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include <stdio.h>
 #include <math.h>
 #include <float.h>
@@ -19,6 +20,9 @@
 window_t gMainWindow;
 map_t gMap;
 player_t gPlayer;
+
+Mix_Chunk* gFootstep1 = NULL;
+Mix_Chunk* gFootstep2 = NULL;
 
 bool shouldClose = false;
 
@@ -107,6 +111,7 @@ int main(int argc, char** argv)
     I_InitGraphics();
     I_InitTextures();
     I_InitPlayer();
+    I_InitAudio();
 
     // Load map from file
     gMap = M_LoadMap(argv[1]);

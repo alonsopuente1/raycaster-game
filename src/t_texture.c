@@ -79,6 +79,9 @@ texture_t T_CreateBlankTexture(const char* name, int width, int height)
 
 void T_FreeTexture(texture_t* tex)
 {
+    if(!tex)
+        return;
+        
     if(tex->data)
         SDL_DestroyTexture(tex->data);
     tex->data = NULL;
