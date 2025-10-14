@@ -88,6 +88,8 @@ void R_RenderPlayerView(player_t* p, map_t* map)
 
         if(side == 0)   perpWallDist = (sideDist.x - deltaDist.x);
         else            perpWallDist = (sideDist.y - deltaDist.y);
+        
+        LogMsgf(DEBUG, "Wall %f away\n", perpWallDist);
 
         int lineHeight = (int)((float)gMainWindow.height / perpWallDist);
 
@@ -212,8 +214,8 @@ void R_RenderMap(player_t* p, map_t* map)
     int         x;
     int         y;
 
-    rectWidth   = gMainWindow.height / map->mapHeight;
-    rectHeight  = gMainWindow.width / map->mapWidth;
+    rectWidth   = gMainWindow.width / map->mapWidth;
+    rectHeight  = gMainWindow.height / map->mapHeight;
 
     SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_BLEND);
     for(y = 0; y < map->mapHeight; y++)
@@ -226,6 +228,8 @@ void R_RenderMap(player_t* p, map_t* map)
             else
                 SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0x33);
             SDL_RenderFillRect(gMainWindow.sdlRenderer, &rect);
+            SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0xff, 0, 0, 0x33);
+            SDL_RenderDrawRect(gMainWindow.sdlRenderer, &rect);
         }
     }
     SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_NONE);

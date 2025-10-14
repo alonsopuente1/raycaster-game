@@ -148,7 +148,7 @@ int main(int argc, char** argv)
         R_RenderPlayerView(&gPlayer, &gMap);
         R_RenderPlayerGun(&gPlayer);
 
-        // printf("PlayerPos: %.2f, %.2f\n", gPlayer.pos.x, gPlayer.pos.y);
+        // R_RenderMap(&gPlayer, &gMap);
 
         // Present
         SDL_RenderPresent(gMainWindow.sdlRenderer);
