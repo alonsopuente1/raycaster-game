@@ -3,6 +3,7 @@
 #include <SDL2/SDL.h>
 #include <float.h>
 #include <stdio.h>
+#include <math.h>
 
 #include "i_init.h"
 #include "v_funcs.h"
@@ -195,10 +196,7 @@ void R_RenderPlayerGun(player_t* p)
     SDL_FRect dstRect = {(float)gMainWindow.width * 0.6f - newTexDim.x * 0.5f, gMainWindow.height - newTexDim.y * 0.7f, newTexDim.x, newTexDim.y};
 
     dstRect.x += sinf(p->gunSway) * weaponTex->width * 0.5f;
-    if(p->gunSway > acos(-1))
-        dstRect.y -= -1 * sinf(p->gunSway) * weaponTex->height * 0.3f * ratio;
-    else
-        dstRect.y -= sinf(p->gunSway) * weaponTex->height * 0.3f * ratio;
+    dstRect.y -= fabs(sinf(p->gunSway)) * weaponTex->height * 0.3f * ratio;
     
     SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
     SDL_RenderDrawRectF(gMainWindow.sdlRenderer, &dstRect);
