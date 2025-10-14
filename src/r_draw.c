@@ -260,12 +260,12 @@ void R_RenderCeilingAndFloor(void)
     SDL_RenderFillRect(gMainWindow.sdlRenderer, &dest);
 }
 
-void R_UpdateMinimap(map_t* map)
+void R_UpdateMinimap(player_t* player, map_t* map)
 {
-    texture_t* minimapTex = T_FindTexture("MINIMAP");
-    if(!minimapTex)
+    texture_t* minimapTex = T_FindTexture("MINIMAP"), *playerTex = T_FindTexture("player");
+    if(!minimapTex || !playerTex)
     {
-        LogMsg(ERROR, "Failed to find minimap texture\n");
+        LogMsg(ERROR, "Failed to find target minimap/player texture\n");
         return;
     }
 
@@ -296,13 +296,15 @@ void R_UpdateMinimap(map_t* map)
     }
     SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_NONE);
 
+    SDL_RenderCopy(gMainWindow.sdlRenderer, playerTex->data, NULL, &(SDL_Rect){(int)(player->pos.x * rectWidth) - 2, (int)(player->pos.y * rectHeight) - 2, 4, 4});
+
     SDL_SetRenderTarget(gMainWindow.sdlRenderer, NULL);
 }
 
 void R_RenderMinimap(player_t* p, map_t* map)
 {
     p = p; // to stop warning
-    R_UpdateMinimap(map);
+    R_UpdateMinimap(p, map);
     texture_t* minimapTex = T_FindTexture("MINIMAP");
     if(!minimapTex)
     {
@@ -310,6 +312,8 @@ void R_RenderMinimap(player_t* p, map_t* map)
         return;
     }
 
-    SDL_Rect dest = {0, 0, gMainWindow.width / 4, gMainWindow.height / 4};
+    SDL_Rect dest = {10, 10, gMainWindow.height / 4, gMainWindow.height / 4};
     SDL_RenderCopy(gMainWindow.sdlRenderer, minimapTex->data, NULL, &dest);
+
+    
 }
