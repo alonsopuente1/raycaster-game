@@ -196,7 +196,7 @@ void R_RenderPlayerGun(player_t* p)
 
     dstRect.x += sinf(p->gunSway) * weaponTex->width * 0.5f;
     if(p->gunSway > acos(-1))
-        dstRect.y -= sinf(p->gunSway - acos(-1)) * weaponTex->height * 0.3f * ratio;
+        dstRect.y -= -1 * sinf(p->gunSway) * weaponTex->height * 0.3f * ratio;
     else
         dstRect.y -= sinf(p->gunSway) * weaponTex->height * 0.3f * ratio;
     
