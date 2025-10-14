@@ -89,7 +89,6 @@ void R_RenderPlayerView(player_t* p, map_t* map)
         if(side == 0)   perpWallDist = (sideDist.x - deltaDist.x);
         else            perpWallDist = (sideDist.y - deltaDist.y);
         
-        LogMsgf(DEBUG, "Wall %f away\n", perpWallDist);
 
         int lineHeight = (int)((float)gMainWindow.height / perpWallDist);
 
@@ -223,7 +222,7 @@ void R_RenderMap(player_t* p, map_t* map)
         for(x = 0; x < map->mapWidth; x++)
         {
             SDL_Rect rect = {x * rectWidth, y * rectHeight, rectWidth, rectHeight};
-            if(map->mapData[y * map->mapHeight + x])
+            if(map->mapData[y * map->mapWidth + x])
                 SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0xff, 0x33);
             else
                 SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0x33);

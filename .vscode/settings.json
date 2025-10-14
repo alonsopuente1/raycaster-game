@@ -1,9 +1,0 @@
-{
-    "files.associations": {
-        "t_textures.h": "c",
-        "settings.h": "c",
-        "logger.h": "c",
-        "sdl.h": "c",
-        "w_window.h": "c"
-    }
-}
