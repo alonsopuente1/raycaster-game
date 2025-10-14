@@ -33,7 +33,6 @@ int NUMTEXTURES = ((int)(sizeof(gTexturePaths) / sizeof(gTexturePaths[0])));
 extern window_t gMainWindow;
 extern player_t gPlayer;
 extern map_t gMap;
-extern SDL_Texture* playerTex;
 
 void I_InitLibs()
 {
@@ -57,7 +56,7 @@ void I_InitTextures()
         return;
     }
 
-    gTextures = malloc(sizeof(texture_t) * NUMTEXTURES);
+    gTextures = malloc(sizeof(texture_t) * (NUMTEXTURES + 1));
     if(!gTextures)
     {
         LogMsg(ERROR, "Failed to allocate memory for textures array!\n");
@@ -72,6 +71,14 @@ void I_InitTextures()
             LogMsgf(ERROR, "Failed to load texture at path '%s'. IMG_ERROR: %s\n", gTexturePaths[i], IMG_GetError());
         }
     }
+
+    // create a blank texture for the minimap
+    gTextures[NUMTEXTURES] = T_CreateBlankTexture("MINIMAP", 256, 256);
+    if(gTextures[NUMTEXTURES].data == NULL)
+    {
+        LogMsgf(ERROR, "Failed to create blank minimap texture. IMG_ERROR: %s\n", IMG_GetError());
+    }
+    NUMTEXTURES++; // increase the number of textures to account for the minimap texture
 }
 
 void I_InitGraphics()
@@ -103,8 +110,6 @@ void I_CleanUp()
     }
 
     FreeLogs();
-
-    SDL_DestroyTexture(playerTex);
 
     IMG_Quit();
     SDL_Quit();

@@ -32,14 +32,10 @@ map_t M_LoadMap(const char* filePath)
     strcpy(out.filePath, filePath);
     out.filePath[strlen(filePath)] = '\0';
 
-    int linesRead = 0;
-
     while(!feof(file))
     {
         memset(buffer, 0, 1024);
         fgets(buffer, 1024, file);
-        linesRead++;
-        printf("Read line: %s\n", buffer);
 
         if(buffer[0] == '#' || buffer[0] == '\n' || buffer[0] == '\r')
             continue;
@@ -101,8 +97,6 @@ map_t M_LoadMap(const char* filePath)
             break;
         }
     }
-
-    printf("Read %d lines from map file %s\n", linesRead, filePath);
 
     fclose(file);
 

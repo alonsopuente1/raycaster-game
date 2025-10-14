@@ -11,7 +11,7 @@ typedef struct window_s
 
     SDL_Window*     sdlWindow;
     SDL_Renderer*   sdlRenderer;
-    
+
 } window_t;
 
 // returns true on success, false on failure

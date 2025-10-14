@@ -17,12 +17,8 @@
 #include "logger.h"
 
 window_t gMainWindow;
-
 map_t gMap;
-
 player_t gPlayer;
-
-SDL_Texture* playerTex;
 
 bool shouldClose = false;
 
@@ -147,6 +143,7 @@ int main(int argc, char** argv)
         R_RenderCeilingAndFloor();
         R_RenderPlayerView(&gPlayer, &gMap);
         R_RenderPlayerGun(&gPlayer);
+        R_RenderMinimap(&gPlayer, &gMap);
 
         // R_RenderMap(&gPlayer, &gMap);
 

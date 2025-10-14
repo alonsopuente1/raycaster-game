@@ -16,8 +16,6 @@
 
 extern window_t gMainWindow;
 
-extern SDL_Texture* playerTex;
-
 void R_RenderPlayerView(player_t* p, map_t* map)
 {
     vertex2d_t playerDir;
@@ -233,7 +231,12 @@ void R_RenderMap(player_t* p, map_t* map)
 
     vertex2d_t screenPos = {(gMainWindow.width * (p->pos.x / (float)map->mapWidth) ) - 5.f, (gMainWindow.height * (p->pos.y / (float)map->mapHeight)) - 5.f};
     SDL_Rect dest = {screenPos.x, screenPos.y, 10, 10};
-    SDL_RenderCopy(gMainWindow.sdlRenderer, playerTex, NULL, &dest);
+
+    texture_t* playerTex = T_FindTexture("player");
+    if(!playerTex)
+        LogMsg(ERROR, "Failed to find player texture\n");
+    else
+        SDL_RenderCopy(gMainWindow.sdlRenderer, playerTex->data, NULL, &dest);
 
     SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0xff, 0, 0x33);
     
@@ -257,6 +260,56 @@ void R_RenderCeilingAndFloor(void)
     SDL_RenderFillRect(gMainWindow.sdlRenderer, &dest);
 }
 
-void R_RenderCircleFromTexture(texture_t* tex, vertex2d_t texPos, float texRadius, vertex2d_t screenPos, float screenRadius)
+void R_UpdateMinimap(map_t* map)
 {
+    texture_t* minimapTex = T_FindTexture("MINIMAP");
+    if(!minimapTex)
+    {
+        LogMsg(ERROR, "Failed to find minimap texture\n");
+        return;
+    }
+
+    SDL_SetRenderTarget(gMainWindow.sdlRenderer, minimapTex->data);
+    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0xff);
+    SDL_RenderClear(gMainWindow.sdlRenderer);
+
+    float       rectWidth;
+    float       rectHeight;
+    int         x;
+    int         y;
+
+    rectWidth   = minimapTex->width / map->mapWidth;
+    rectHeight  = minimapTex->height / map->mapHeight;
+
+    SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_BLEND);
+    for(y = 0; y < map->mapHeight; y++)
+    {
+        for(x = 0; x < map->mapWidth; x++)
+        {
+            SDL_Rect rect = {x * rectWidth, y * rectHeight, rectWidth, rectHeight};
+            if(map->mapData[y * map->mapWidth + x])
+                SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0xff, 0x33);
+            else
+                SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0x33);
+            SDL_RenderFillRect(gMainWindow.sdlRenderer, &rect);
+        }
+    }
+    SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_NONE);
+
+    SDL_SetRenderTarget(gMainWindow.sdlRenderer, NULL);
+}
+
+void R_RenderMinimap(player_t* p, map_t* map)
+{
+    p = p; // to stop warning
+    R_UpdateMinimap(map);
+    texture_t* minimapTex = T_FindTexture("MINIMAP");
+    if(!minimapTex)
+    {
+        LogMsg(ERROR, "Failed to find minimap texture\n");
+        return;
+    }
+
+    SDL_Rect dest = {0, 0, gMainWindow.width / 4, gMainWindow.height / 4};
+    SDL_RenderCopy(gMainWindow.sdlRenderer, minimapTex->data, NULL, &dest);
 }

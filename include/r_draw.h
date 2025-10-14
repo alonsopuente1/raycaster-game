@@ -8,5 +8,6 @@ extern void R_RenderPlayerView(player_t* p, map_t* map);
 extern void R_RenderMap(player_t* p, map_t* map);
 extern void R_RenderCeilingAndFloor(void);
 extern void R_RenderPlayerGun(player_t* p);
+extern void R_RenderMinimap(player_t* p, map_t* map);
 
 #endif
