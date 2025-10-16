@@ -260,6 +260,8 @@ void R_RenderCeilingAndFloor(void)
     SDL_RenderFillRect(gMainWindow.sdlRenderer, &dest);
 }
 
+
+// updates the minimap texture
 void R_UpdateMinimap(player_t* player, map_t* map)
 {
     texture_t* minimapTex = T_FindTexture("MINIMAP"), *playerTex = T_FindTexture("player");
@@ -268,6 +270,19 @@ void R_UpdateMinimap(player_t* player, map_t* map)
         LogMsg(ERROR, "Failed to find target minimap/player texture\n");
         return;
     }
+
+    SDL_Texture* blueCell = SDL_CreateTexture(gMainWindow.sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_Texture* blackCell = SDL_CreateTexture(gMainWindow.sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    
+    SDL_SetRenderTarget(gMainWindow.sdlRenderer, blueCell);
+    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0xff, 0xff);
+    SDL_RenderClear(gMainWindow.sdlRenderer);
+
+
+    SDL_SetRenderTarget(gMainWindow.sdlRenderer, blackCell);
+    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0xff);
+    SDL_RenderClear(gMainWindow.sdlRenderer);
+
 
     SDL_SetRenderTarget(gMainWindow.sdlRenderer, minimapTex->data);
     SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0xff);
@@ -286,21 +301,33 @@ void R_UpdateMinimap(player_t* player, map_t* map)
     {
         for(x = 0; x < map->mapWidth; x++)
         {
-            SDL_Rect rect = {x * rectWidth, y * rectHeight, rectWidth, rectHeight};
-            if(map->mapData[y * map->mapWidth + x])
-                SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0xff, 0x33);
-            else
-                SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0x33);
-            SDL_RenderFillRect(gMainWindow.sdlRenderer, &rect);
+            SDL_Rect cellScreenRect = { 0 };
+
+            cellScreenRect.x = x * rectWidth + minimapTex->width / 2 - player->pos.x * rectWidth;
+            cellScreenRect.y = y * rectHeight + minimapTex->height / 2 - player->pos.y * rectHeight;
+
+            cellScreenRect.w = rectWidth;
+            cellScreenRect.h = rectHeight;
+
+            bool blue = map->mapData[y * map->mapWidth + x] != 0;
+
+            SDL_Point centreRotation = (SDL_Point){minimapTex->width / 2 - cellScreenRect.x, minimapTex->height / 2 - cellScreenRect.y};
+
+            if(SDL_RenderCopyEx(gMainWindow.sdlRenderer, blue ? blueCell : blackCell, NULL, &cellScreenRect, -(player->viewAngle + M_PI / 2) * (180 / M_PI), &centreRotation, (SDL_RendererFlip)0) < 0)
+                LogMsg(ERROR, "failed to render map cell on minimap texture\n");
         }
     }
     SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_NONE);
 
-    SDL_RenderCopy(gMainWindow.sdlRenderer, playerTex->data, NULL, &(SDL_Rect){(int)(player->pos.x * rectWidth) - 2, (int)(player->pos.y * rectHeight) - 2, 4, 4});
+    SDL_RenderCopy(gMainWindow.sdlRenderer, playerTex->data, NULL, &(SDL_Rect){(int)(minimapTex->width / 2) - 2, (int)(minimapTex->height / 2) - 2, 4, 4});
 
     SDL_SetRenderTarget(gMainWindow.sdlRenderer, NULL);
+
+    SDL_DestroyTexture(blackCell);
+    SDL_DestroyTexture(blueCell);
 }
 
+void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius);
 void R_RenderMinimap(player_t* p, map_t* map)
 {
     p = p; // to stop warning
@@ -312,8 +339,80 @@ void R_RenderMinimap(player_t* p, map_t* map)
         return;
     }
 
-    SDL_Rect dest = {10, 10, gMainWindow.height / 4, gMainWindow.height / 4};
-    SDL_RenderCopy(gMainWindow.sdlRenderer, minimapTex->data, NULL, &dest);
-
     
+    float minimapRadius = gMainWindow.width / 12;
+    vertex2d_t texturePos = (vertex2d_t){0.5f, 0.5f};
+    
+    SDL_Vertex* vertices = NULL;
+    int numVertices = 0;
+    R_FormVerticesForCircleFromTexture(&vertices, &numVertices, 20, 0, (vertex2d_t){minimapRadius + 10, minimapRadius + 10}, minimapRadius, texturePos, 0.5f);
+
+    if(SDL_RenderGeometry(gMainWindow.sdlRenderer, minimapTex->data, vertices, numVertices, NULL, 0) < 0) 
+        LogMsgf(ERROR, "SDL_RenderGeometry failed to render minimap. SDL_ERROR:%s\n", SDL_GetError());
+}
+
+
+/// @brief forms vertices to use for SDL_RenderGeometry for rendering a circle from a texture to a circle on screen
+/// @param vertices pointer to vertex array. result will be stored here. if it points to already allocated memory, it frees that memory
+/// @param numTriangles number of triangles to use for the circle. higher number = more defined circle. must be at least 4
+/// @param angle for the texture to be able to rotate the circle on the texture
+/// @param screenPos screen position of the centre of the circle to be rendered
+/// @param screenRadius radius of the circle on screen
+/// @param texturePos centre position of the circle to take from texture. both components has to be in range 0-1 as tex coords are normalised
+/// @param textureRadius radius of circle to take from texture. must be in within the range of texture since texture coordinates are normalised 
+void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius)
+{
+    if(numTriangles < 4)
+    {
+        LogMsg(ERROR, "couldnt form vertices for circle, numTriangles has to be at least 4\n");
+        return;
+    }
+
+    if(texturePos.x < 0 || texturePos.x > 1 || texturePos.y < 0 || texturePos.y > 1)
+    {
+        LogMsg(ERROR, "texture coords are outside of the texture coordinates\n");
+        return;
+    }
+
+    if(*vertices)
+        free(*vertices);
+
+    *vertices = malloc(sizeof(SDL_Vertex) * numTriangles * 3);
+    const int numVertices = numTriangles * 3;
+
+    if(pNumVertices)
+        *pNumVertices = numVertices;
+
+    for(int i = 0; i < numVertices; i+= 3)
+    {
+        int j = i / 3;
+        float triangleAngle = (M_PI * 2) / (float)numTriangles;
+
+        SDL_Vertex* centreVertex = &(*vertices)[i];
+        SDL_Vertex* currentVertex = &(*vertices)[i + 1];
+        SDL_Vertex* finalVertex = &(*vertices)[i + 2];
+
+        centreVertex->position.x = screenPos.x;
+        centreVertex->position.y = screenPos.y;
+
+        centreVertex->tex_coord.x = texturePos.x;
+        centreVertex->tex_coord.y = texturePos.y;
+
+        centreVertex->color = (SDL_Color){255, 255, 255, 255};
+
+        currentVertex->position.x = cosf(triangleAngle * j) * screenRadius + screenPos.x;
+        currentVertex->position.y = sinf(triangleAngle * j) * screenRadius + screenPos.y;
+
+        currentVertex->tex_coord.x = cosf(triangleAngle * j + angle) * textureRadius + texturePos.x;
+        currentVertex->tex_coord.y = sinf(triangleAngle * j + angle) * textureRadius + texturePos.y;
+        currentVertex->color = (SDL_Color){255, 255, 255, 255};
+
+        finalVertex->position.x = cosf(triangleAngle * (j + 1)) * screenRadius + screenPos.x;
+        finalVertex->position.y = sinf(triangleAngle * (j + 1)) * screenRadius + screenPos.y;
+        
+        finalVertex->tex_coord.x = cosf(triangleAngle * (j + 1) + angle) * textureRadius + texturePos.x;
+        finalVertex->tex_coord.y = sinf(triangleAngle * (j + 1) + angle) * textureRadius + texturePos.y;
+        
+        finalVertex->color = (SDL_Color){255, 255, 255, 255};
+    }
 }

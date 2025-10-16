@@ -16,6 +16,7 @@ typedef enum movestateBitmask_e
 
 typedef struct player_s
 {
+    // stored in radians
     float           viewAngle;
     float           maxMoveSpeed;
     
