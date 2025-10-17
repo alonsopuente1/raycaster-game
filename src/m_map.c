@@ -169,3 +169,17 @@ void M_Free(map_t map)
     if(map.filePath)
         free(map.filePath);
 }
+
+int M_GetMapCell(map_t* map, int index)
+{
+    if(!map || !map->mapData)
+    {
+        LogMsg(WARN, "Passing null or uninitialised map to M_GetMapCell()\n");
+        return -1;
+    }
+
+    if(index < 0 || index > map->mapHeight * map->mapWidth - 1)
+        return -1;
+
+    return map->mapData[index];
+}

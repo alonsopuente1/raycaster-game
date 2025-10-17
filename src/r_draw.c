@@ -82,7 +82,7 @@ void R_RenderPlayerView(player_t* p, map_t* map)
                 mapY += stepY;
                 side = 1;
             }
-            if(map->mapData[mapY * map->mapHeight + mapX] > 0) hit = 1;
+            if(M_GetMapCell(map, mapY * map->mapHeight + mapX) > 0) hit = 1;
         }
 
         if(side == 0)   perpWallDist = (sideDist.x - deltaDist.x);
@@ -94,7 +94,7 @@ void R_RenderPlayerView(player_t* p, map_t* map)
         int drawStart = -lineHeight / 2 + gMainWindow.height / 2;
 
         SDL_Colour colour = {0};
-        switch(map->mapData[mapY * map->mapHeight + mapX])
+        switch(M_GetMapCell(map, mapY * map->mapHeight + mapX))
         {
         case 1:
             colour.r = 0xff;
@@ -136,7 +136,7 @@ void R_RenderPlayerView(player_t* p, map_t* map)
         }
         
         // index into the texture array 
-        int texNum = map->mapData[mapY * map->mapHeight + mapX] - 1;
+        int texNum = M_GetMapCell(map, mapY * map->mapHeight + mapX) - 1;
 
         if(texNum < 0 || texNum >= NUMTEXTURES)
             texNum = 0;
@@ -218,7 +218,7 @@ void R_RenderMap(player_t* p, map_t* map)
         for(x = 0; x < map->mapWidth; x++)
         {
             SDL_Rect rect = {x * rectWidth, y * rectHeight, rectWidth, rectHeight};
-            if(map->mapData[y * map->mapWidth + x])
+            if(M_GetMapCell(map, y * map->mapWidth + x))
                 SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0xff, 0x33);
             else
                 SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0x33);
@@ -309,7 +309,7 @@ void R_UpdateMinimap(player_t* player, map_t* map)
             cellScreenRect.w = rectWidth;
             cellScreenRect.h = rectHeight;
 
-            bool blue = map->mapData[y * map->mapWidth + x] != 0;
+            bool blue = M_GetMapCell(map, y * map->mapWidth + x) > 0;
 
             SDL_Point centreRotation = (SDL_Point){minimapTex->width / 2 - cellScreenRect.x, minimapTex->height / 2 - cellScreenRect.y};
 

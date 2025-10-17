@@ -30,7 +30,7 @@ void P_Rotate(player_t* p, const float ang)
 void P_HandleState(player_t* p, map_t* m, float dt)
 {
     vertex2d_t oldPos = p->pos;
-    vertex2d_t viewDir = V_Mul(V_AngToVec(p->viewAngle), 0.001f);
+    vertex2d_t viewDir = V_AngToVec(p->viewAngle);
     vertex2d_t newAcc = {0.f, 0.f};
 
     if(p->moveState & MOVE_FORWARD) // Player moving forward
@@ -46,6 +46,8 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     if(p->moveState & ROTATE_LEFT) // Player rotating left
         P_Rotate(p, -p->rotateSpeed * dt);
     
+    V_SetMagnitude(&newAcc, 0.0001f);
+
     if(!V_GetMagnitude(newAcc))
     {
         newAcc = V_Mul(p->vel, -0.1f); // apply friction
@@ -81,18 +83,11 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     if(!m)
         return;
     
-    if(m->mapData[(int)p->pos.y * m->mapWidth + (int)p->pos.x > 0])
-    {
-        // does adding x put player in wall?
-        if(m->mapData[(int)oldPos.y * m->mapWidth + (int)(oldPos.x + deltaPos.x)])
-        {
-            p->pos.x -= deltaPos.x;
-        }
+    // does adding x put player in wall?
+    if(M_GetMapCell(m, (int)oldPos.y * m->mapWidth + (int)(oldPos.x + deltaPos.x)) > 0)
+        p->pos.x -= deltaPos.x;
+    // does adding y put player in wall?
+    if(M_GetMapCell(m, (int)(oldPos.y + deltaPos.y) * m->mapWidth + (int)(oldPos.x)) > 0)
+        p->pos.y -= deltaPos.y;
 
-        // does adding y put player in wall?
-        if(m->mapData[(int)(oldPos.y + deltaPos.y) * m->mapWidth + (int)(oldPos.x)])
-        {
-            p->pos.y -= deltaPos.y;
-        }
-    }
 }
