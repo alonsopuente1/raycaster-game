@@ -5,8 +5,8 @@ Right now there is only support for windows. Compiler this uses is gcc. Compilin
 
 ### Windows
 cd into the root directory of repo then run
-'''
+```
 make
-'''
+```
 ## Screenshots 
 ![screenshot of "game"](image.png)
