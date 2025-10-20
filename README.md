@@ -1,3 +1,7 @@
 Simple wolf3d-style raycaster
 
-The map format starts with a line for the width and height for the map itself and the map in a grid
+Build instructions
+
+Right now there is only support for windows. Compiler this uses is gcc. Compiling with other compilers may not work because of __FUNCTION__ macro in the logger.h file in the include folder. If compiling with another compiler be wary of this
+
+Screenshots 
