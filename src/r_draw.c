@@ -5,19 +5,40 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "i_init.h"
 #include "v_funcs.h"
 #include "p_player.h"
 #include "settings.h"
-#include "t_textures.h"
-#include "w_window.h"
+#include "m_game.h"
 
 #include "logger.h"
 
-extern window_t gMainWindow;
-
-void R_RenderPlayerView(player_t* p, map_t* map)
+void R_RenderPlayerView(window_t* window, texturebank_t* texturebank, player_t* p, map_t* map)
 {
+    // check params
+    if(!window)
+    {
+        LogMsg(WARN, "passed null ptr to window\n");
+        return;
+    }
+
+    if(!texturebank)
+    {
+        LogMsg(WARN, "passed null ptr to texturebank\n");
+        return;
+    }
+    
+    if(!p)
+    {
+        LogMsg(WARN, "passed null ptr to player\n");
+        return;
+    }
+
+    if(!map)
+    {
+        LogMsg(WARN, "passed null ptr to map\n");
+        return;
+    }
+
     vertex2d_t playerDir;
     vertex2d_t plane;
     int x;
@@ -25,9 +46,16 @@ void R_RenderPlayerView(player_t* p, map_t* map)
     playerDir   = V_AngToVec(p->viewAngle);
     plane       = V_Mul(V_Normalise(V_GetPerpendicular(playerDir)), -1);
 
-    for(x = 0; x < gMainWindow.width; x++)
+    texture_t* textures[10] = { 0 };
+
+    for(int i = 0; i < (int)(sizeof(textures) / sizeof(texture_t*)); i++)
     {
-        float cameraX = (float)x / (float)gMainWindow.width * 2.0f - 1.0f;
+        textures[i] = TB_GetTextureByIndex(texturebank, i);
+    }
+
+    for(x = 0; x < window->width; x++)
+    {
+        float cameraX = (float)x / (float)window->width * 2.0f - 1.0f;
         vertex2d_t rayDir = V_Add(playerDir, V_Mul(plane, cameraX));
 
         int mapX = (int)p->pos.x;
@@ -82,211 +110,163 @@ void R_RenderPlayerView(player_t* p, map_t* map)
                 mapY += stepY;
                 side = 1;
             }
+            if(mapX < 0 || mapX >= map->mapWidth || mapY < 0 || mapY >= map->mapHeight)
+                break;
+
             if(M_GetMapCell(map, mapY * map->mapHeight + mapX) > 0) hit = 1;
         }
-
+        
         if(side == 0)   perpWallDist = (sideDist.x - deltaDist.x);
         else            perpWallDist = (sideDist.y - deltaDist.y);
         
+        int lineHeight = (int)((float)window->height / perpWallDist);
 
-        int lineHeight = (int)((float)gMainWindow.height / perpWallDist);
-
-        int drawStart = -lineHeight / 2 + gMainWindow.height / 2;
-
-        SDL_Colour colour = {0};
-        switch(M_GetMapCell(map, mapY * map->mapHeight + mapX))
-        {
-        case 1:
-            colour.r = 0xff;
-            colour.g = 0;
-            colour.b = 0;
-            break;
-        case 2:
-            colour.r = 0; 
-            colour.g = 0xff, 
-            colour.b = 0;
-            break;
-        case 3:
-            colour.r = 0;
-            colour.g = 0; 
-            colour.b = 0xff;
-            break;
-        case 4:
-            colour.r = 0xff; 
-            colour.g = 0xff;
-            colour.b = 0;
-            break;
-        case 5:
-            colour.r = 0;
-            colour.g = 0xff;
-            colour.b = 0xff;
-            break;
-        default:
-            colour.r = 0;
-            colour.g = 0xff;
-            colour.b = 0xff;
-            break;
-        }
-
-        if(side == 1)
-        {
-            colour.r /= 2;
-            colour.g /= 2;
-            colour.b /= 2;
-        }
+        int drawStart = -lineHeight / 2 + window->height / 2;
         
-        // index into the texture array 
+        // index into the texture linked list
         int texNum = M_GetMapCell(map, mapY * map->mapHeight + mapX) - 1;
 
-        if(texNum < 0 || texNum >= NUMTEXTURES)
-            texNum = 0;
+        if(texNum < 0)
+        {
+            LogMsg(ERROR, "couldnt find texture\n");
+            continue;
+        }
 
-        // if(texNum > 0)
-        // {
-        //     SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, colour.r, colour.g, colour.b, 0xff);
-        //     SDL_RenderDrawLine(gMainWindow.sdlRenderer, x, drawStart, x, drawEnd);
-        // }
-        // else
-        // {
-            double wallX;
+        texture_t* wallTexture = textures[texNum];
 
-            if(side == 0)
-            {
-                wallX = p->pos.y + perpWallDist * rayDir.y;
-            }
-            else
-            {
-                wallX = p->pos.x + perpWallDist * rayDir.x;
-            }
-            wallX -= floor(wallX);
+        if(wallTexture == NULL)
+        {
+            LogMsg(ERROR, "couldnt find texture\n");
+            continue;
+        }
+        double wallX;
 
-            int texX = (int)(wallX * (double)gTextures[texNum].width);
-            if(side == 0 && rayDir.x > 0) texX = gTextures[texNum].width - texX - 1;
-            if(side == 1 && rayDir.y < 0) texX = gTextures[texNum].width - texX - 1;
+        if(side == 0)
+        {
+            wallX = p->pos.y + perpWallDist * rayDir.y;
+        }
+        else
+        {
+            wallX = p->pos.x + perpWallDist * rayDir.x;
+        }
+        wallX -= floor(wallX);
 
-            SDL_Rect src = {texX, 0, 1, gTextures[texNum].height};
-            SDL_Rect dest = {x, drawStart, 1, lineHeight};        
+        int texX = (int)(wallX * (double)wallTexture->width);
+        // TB_GetTextureByIndex wont fail since already checked before
+        if(side == 0 && rayDir.x > 0) texX = wallTexture->width - texX - 1;
+        if(side == 1 && rayDir.y < 0) texX = wallTexture->width - texX - 1;
 
-            SDL_RenderCopy(gMainWindow.sdlRenderer, gTextures[texNum].data, &src, &dest);
-        // }
+        SDL_Rect src = {texX, 0, 1, wallTexture->height};
+        SDL_Rect dest = {x, drawStart, 1, lineHeight};        
+
+        SDL_RenderCopy(window->sdlRenderer, wallTexture->data, &src, &dest);
+        if(!side)
+        {
+            SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_BLEND);
+            SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0, 0x10);
+            SDL_RenderDrawRect(window->sdlRenderer, &dest);
+            SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_NONE);
+        }
     }
 }
 
-void R_RenderPlayerGun(player_t* p)
+void R_RenderPlayerGun(window_t* window, texturebank_t* texturebank, player_t* p)
 {
+    if(!window)
+    {
+        LogMsg(WARN, "passed null ptr to window\n");
+        return;
+    }
+
+    if(!texturebank)
+    {
+        LogMsg(WARN, "passed null ptr to texturebank\n");
+        return;
+    }
+    if(!p)
+    {
+        LogMsg(WARN, "passed null ptr to player\n");
+        return;
+    }
+
     gun_t gun = p->currentGun;
     texture_t* weaponTex = NULL;
 
-    if(gun == FISTS)
+    switch(gun)
     {
-        weaponTex = T_FindTexture("FIST");
+    case FISTS:
+        weaponTex = TB_FindTexture(texturebank, "FIST");
+        break;
+    default:
+        weaponTex = NULL;
+        break;
     }
 
-    if(weaponTex == NULL)
+    if(!weaponTex)
     {
-        LogMsg(WARN, "Can't find weapon texture\n");
+        LogMsg(WARN, "couldn't find current gun texture\n");
+        return;
     }
 
-    float ratio = gMainWindow.width / (2 * weaponTex->width); 
+    float ratio = window->width / (2 * weaponTex->width); 
 
     vertex2d_t newTexDim = {weaponTex->width * ratio, weaponTex->height * ratio};
 
-    SDL_FRect dstRect = {(float)gMainWindow.width * 0.6f - newTexDim.x * 0.5f, gMainWindow.height - newTexDim.y * 0.7f, newTexDim.x, newTexDim.y};
+    SDL_FRect dstRect = {(float)window->width * 0.6f - newTexDim.x * 0.5f, window->height - newTexDim.y * 0.7f, newTexDim.x, newTexDim.y};
 
     dstRect.x += sinf(p->gunSway) * weaponTex->width * 0.5f;
     dstRect.y -= fabs(sinf(p->gunSway)) * weaponTex->height * 0.3f * ratio;
     
-    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawRectF(gMainWindow.sdlRenderer, &dstRect);
+    SDL_SetRenderDrawColor(window->sdlRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+    SDL_RenderDrawRectF(window->sdlRenderer, &dstRect);
     
-    SDL_RenderCopyF(gMainWindow.sdlRenderer, weaponTex->data, NULL, &dstRect);
+    SDL_RenderCopyF(window->sdlRenderer, weaponTex->data, NULL, &dstRect);
 }
 
-void R_RenderMap(player_t* p, map_t* map)
+void R_RenderCeilingAndFloor(window_t* window)
 {
-    float       rectWidth;
-    float       rectHeight;
-    int         x;
-    int         y;
+    SDL_Rect dest = {0, 0, window->width, window->height / 2};
 
-    rectWidth   = gMainWindow.width / map->mapWidth;
-    rectHeight  = gMainWindow.height / map->mapHeight;
-
-    SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_BLEND);
-    for(y = 0; y < map->mapHeight; y++)
-    {
-        for(x = 0; x < map->mapWidth; x++)
-        {
-            SDL_Rect rect = {x * rectWidth, y * rectHeight, rectWidth, rectHeight};
-            if(M_GetMapCell(map, y * map->mapWidth + x))
-                SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0xff, 0x33);
-            else
-                SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0x33);
-            SDL_RenderFillRect(gMainWindow.sdlRenderer, &rect);
-            SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0xff, 0, 0, 0x33);
-            SDL_RenderDrawRect(gMainWindow.sdlRenderer, &rect);
-        }
-    }
-    SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_NONE);
-
-    vertex2d_t screenPos = {(gMainWindow.width * (p->pos.x / (float)map->mapWidth) ) - 5.f, (gMainWindow.height * (p->pos.y / (float)map->mapHeight)) - 5.f};
-    SDL_Rect dest = {screenPos.x, screenPos.y, 10, 10};
-
-    texture_t* playerTex = T_FindTexture("player");
-    if(!playerTex)
-        LogMsg(ERROR, "Failed to find player texture\n");
-    else
-        SDL_RenderCopy(gMainWindow.sdlRenderer, playerTex->data, NULL, &dest);
-
-    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0xff, 0, 0x33);
-    
-    vertex2d_t viewLine = V_Add(V_Mul(V_AngToVec(p->viewAngle), 10), screenPos);
-
-    SDL_RenderDrawLine(gMainWindow.sdlRenderer, (int)screenPos.x, (int)screenPos.y, (int)viewLine.x, (int)viewLine.y);
-
-    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0xff, 0, 0, 0x33);
-    vertex2d_t viewLine2 = V_Add(viewLine, V_Mul(V_GetPerpendicular(V_AngToVec(p->viewAngle)), 10));
-    SDL_RenderDrawLine(gMainWindow.sdlRenderer, (int)viewLine.x, (int)viewLine.y, (int)viewLine2.x, (int)viewLine2.y);
-}
-
-void R_RenderCeilingAndFloor(void)
-{
-    SDL_Rect dest = {0, 0, gMainWindow.width, gMainWindow.height / 2};
-
-    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0x40, 0x40, 0x40, 0xff);
-    SDL_RenderFillRect(gMainWindow.sdlRenderer, &dest);
-    dest.y = gMainWindow.height / 2;
-    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0x60, 0x60, 0x60, 0xff);
-    SDL_RenderFillRect(gMainWindow.sdlRenderer, &dest);
+    SDL_SetRenderDrawColor(window->sdlRenderer, 0x40, 0x40, 0x40, 0xff);
+    SDL_RenderFillRect(window->sdlRenderer, &dest);
+    dest.y = window->height / 2;
+    SDL_SetRenderDrawColor(window->sdlRenderer, 0x60, 0x60, 0x60, 0xff);
+    SDL_RenderFillRect(window->sdlRenderer, &dest);
 }
 
 
 // updates the minimap texture
-void R_UpdateMinimap(player_t* player, map_t* map)
+void R_UpdateMinimap(window_t* window, texturebank_t* texturebank, player_t* player, map_t* map)
 {
-    texture_t* minimapTex = T_FindTexture("MINIMAP"), *playerTex = T_FindTexture("player");
-    if(!minimapTex || !playerTex)
+    texture_t* minimapTex = TB_FindTexture(texturebank, "MINIMAP"), *playerTex = TB_FindTexture(texturebank, "player");
+    if(!minimapTex)
     {
-        LogMsg(ERROR, "Failed to find target minimap/player texture\n");
+        LogMsg(ERROR, "Failed to find target minimap texture\n");
+        return;
+    }
+    
+    if(!playerTex)
+    {
+        LogMsg(ERROR, "Failed to find target player texture\n");
         return;
     }
 
-    SDL_Texture* blueCell = SDL_CreateTexture(gMainWindow.sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
-    SDL_Texture* blackCell = SDL_CreateTexture(gMainWindow.sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_Texture* blueCell = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+    SDL_Texture* blackCell = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
     
-    SDL_SetRenderTarget(gMainWindow.sdlRenderer, blueCell);
-    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0xff, 0xff);
-    SDL_RenderClear(gMainWindow.sdlRenderer);
+    SDL_SetRenderTarget(window->sdlRenderer, blueCell);
+    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0xff, 0xff);
+    SDL_RenderClear(window->sdlRenderer);
 
 
-    SDL_SetRenderTarget(gMainWindow.sdlRenderer, blackCell);
-    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0xff);
-    SDL_RenderClear(gMainWindow.sdlRenderer);
+    SDL_SetRenderTarget(window->sdlRenderer, blackCell);
+    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0, 0xff);
+    SDL_RenderClear(window->sdlRenderer);
 
 
-    SDL_SetRenderTarget(gMainWindow.sdlRenderer, minimapTex->data);
-    SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0xff);
-    SDL_RenderClear(gMainWindow.sdlRenderer);
+    SDL_SetRenderTarget(window->sdlRenderer, minimapTex->data);
+    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0, 0xff);
+    SDL_RenderClear(window->sdlRenderer);
 
     float       rectWidth;
     float       rectHeight;
@@ -296,7 +276,7 @@ void R_UpdateMinimap(player_t* player, map_t* map)
     rectWidth   = minimapTex->width / map->mapWidth;
     rectHeight  = minimapTex->height / map->mapHeight;
 
-    SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_BLEND);
+    SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_BLEND);
     for(y = 0; y < map->mapHeight; y++)
     {
         for(x = 0; x < map->mapWidth; x++)
@@ -313,41 +293,40 @@ void R_UpdateMinimap(player_t* player, map_t* map)
 
             SDL_Point centreRotation = (SDL_Point){minimapTex->width / 2 - cellScreenRect.x, minimapTex->height / 2 - cellScreenRect.y};
 
-            if(SDL_RenderCopyEx(gMainWindow.sdlRenderer, blue ? blueCell : blackCell, NULL, &cellScreenRect, -(player->viewAngle + M_PI / 2) * (180 / M_PI), &centreRotation, (SDL_RendererFlip)0) < 0)
+            if(SDL_RenderCopyEx(window->sdlRenderer, blue ? blueCell : blackCell, NULL, &cellScreenRect, -(player->viewAngle + M_PI / 2) * (180 / M_PI), &centreRotation, (SDL_RendererFlip)0) < 0)
                 LogMsg(ERROR, "failed to render map cell on minimap texture\n");
         }
     }
-    SDL_SetRenderDrawBlendMode(gMainWindow.sdlRenderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_NONE);
 
-    SDL_RenderCopy(gMainWindow.sdlRenderer, playerTex->data, NULL, &(SDL_Rect){(int)(minimapTex->width / 2) - 2, (int)(minimapTex->height / 2) - 2, 4, 4});
+    SDL_RenderCopy(window->sdlRenderer, playerTex->data, NULL, &(SDL_Rect){(int)(minimapTex->width / 2) - 2, (int)(minimapTex->height / 2) - 2, 4, 4});
 
-    SDL_SetRenderTarget(gMainWindow.sdlRenderer, NULL);
+    SDL_SetRenderTarget(window->sdlRenderer, NULL);
 
     SDL_DestroyTexture(blackCell);
     SDL_DestroyTexture(blueCell);
 }
 
 void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius);
-void R_RenderMinimap(player_t* p, map_t* map)
+void R_RenderMinimap(window_t* window, texturebank_t* texturebank, player_t* p, map_t* map)
 {
     p = p; // to stop warning
-    R_UpdateMinimap(p, map);
-    texture_t* minimapTex = T_FindTexture("MINIMAP");
+    R_UpdateMinimap(window, texturebank, p, map);
+    texture_t* minimapTex = TB_FindTexture(texturebank, "MINIMAP");
     if(!minimapTex)
     {
         LogMsg(ERROR, "Failed to find minimap texture\n");
         return;
     }
-
     
-    float minimapRadius = gMainWindow.width / 12;
+    float minimapRadius = window->width / 12;
     vertex2d_t texturePos = (vertex2d_t){0.5f, 0.5f};
     
     SDL_Vertex* vertices = NULL;
     int numVertices = 0;
     R_FormVerticesForCircleFromTexture(&vertices, &numVertices, 20, 0, (vertex2d_t){minimapRadius + 10, minimapRadius + 10}, minimapRadius, texturePos, 0.5f);
 
-    if(SDL_RenderGeometry(gMainWindow.sdlRenderer, minimapTex->data, vertices, numVertices, NULL, 0) < 0) 
+    if(SDL_RenderGeometry(window->sdlRenderer, minimapTex->data, vertices, numVertices, NULL, 0) < 0) 
         LogMsgf(ERROR, "SDL_RenderGeometry failed to render minimap. SDL_ERROR:%s\n", SDL_GetError());
 }
 

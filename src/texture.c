@@ -1,9 +1,9 @@
-#include "t_textures.h"
+#include "texture.h"
 
 #include <SDL2/SDL_image.h>
 
 #include "settings.h"
-#include "w_window.h"
+#include "window.h"
 
 #include "logger.h"
 
@@ -32,10 +32,10 @@ void fileNameFromPath(const char* path, char* outName, int maxLen)
     outName[charsToCopy] = '\0';
 }
 
-texture_t T_LoadTexture(const char* path)
+texture_t T_LoadTexture(window_t* window, const char* path)
 {
     texture_t tex;
-    tex.data = IMG_LoadTexture(gMainWindow.sdlRenderer, path);
+    tex.data = IMG_LoadTexture(window->sdlRenderer, path);
     if(!tex.data)
     {
         LogMsgf(ERROR, "Failed to load texture at path '%s'. IMG_ERROR: %s", path, IMG_GetError());
@@ -51,21 +51,12 @@ texture_t T_LoadTexture(const char* path)
     return tex;
 }
 
-texture_t* T_FindTexture(const char* texName)
-{
-    for(int i = 0; i < NUMTEXTURES; i++)
-        if(strcmp(gTextures[i].name, texName) == 0)
-            return &gTextures[i];
-
-    return NULL;
-}
-
-texture_t T_CreateBlankTexture(const char* name, int width, int height)
+texture_t T_CreateBlankTexture(window_t* window, const char* name, int width, int height)
 {
     texture_t tex = {0};
     tex.width = width;
     tex.height = height;
-    tex.data = SDL_CreateTexture(gMainWindow.sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
+    tex.data = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
     if(!tex.data)
     {
         LogMsgf(ERROR, "Failed to create blank texture of size %d x %d. SDL_ERROR: %s\n", width, height, SDL_GetError());

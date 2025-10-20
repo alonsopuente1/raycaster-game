@@ -61,5 +61,7 @@ vertex2d_t V_Rotate(const vertex2d_t a, const float angle)
 
 void V_SetMagnitude(vertex2d_t* a, const float mag)
 {
+    if(V_GetMagnitude(*a) == 0.f)
+        return;
     *a = V_Mul(*a, mag / V_GetMagnitude(*a));
 }

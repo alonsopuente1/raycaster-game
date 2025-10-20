@@ -11,13 +11,11 @@ typedef struct texture_s
     char            name[32]; // name of the texture (stripped from file path)
 } texture_t;
 
-// Loads a texture from file path. On failure, returns a texture with data = NULL
-extern texture_t T_LoadTexture(const char* path);
-extern texture_t T_CreateBlankTexture(const char* name, int width, int height);
-// safe to pass null
-extern void T_FreeTexture(texture_t* tex);
-// returns NULL if not found
-extern texture_t* T_FindTexture(const char* texName);
-extern texture_t* gTextures;
+typedef struct window_s window_t;
 
-#endif
+// Loads a texture from file path. On failure, returns a texture with data = NULL
+extern texture_t T_LoadTexture(window_t* window, const char* path);
+extern texture_t T_CreateBlankTexture(window_t* window, const char* name, int width, int height);
+extern void T_FreeTexture(texture_t* tex);
+
+#endif 

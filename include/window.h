@@ -1,5 +1,5 @@
-#ifndef __W_WINDOW_H__
-#define __W_WINDOW_H__
+#ifndef __WINDOW_H__
+#define __WINDOW_H__
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>

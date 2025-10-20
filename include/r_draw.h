@@ -2,12 +2,14 @@
 #define __R_DRAW_H__
 
 #include "p_player.h"
-#include "m_map.h"
+#include "map.h"
+#include "window.h"
 
-extern void R_RenderPlayerView(player_t* p, map_t* map);
-extern void R_RenderMap(player_t* p, map_t* map);
-extern void R_RenderCeilingAndFloor(void);
-extern void R_RenderPlayerGun(player_t* p);
-extern void R_RenderMinimap(player_t* p, map_t* map);
+typedef struct texturebank_s texturebank_t;
+
+extern void R_RenderPlayerView(window_t* window, texturebank_t* texturebank, player_t* p, map_t* map);
+extern void R_RenderCeilingAndFloor(window_t* window);
+extern void R_RenderPlayerGun(window_t* window, texturebank_t* texturebank, player_t* p);
+extern void R_RenderMinimap(window_t* window, texturebank_t* texturebank, player_t* p, map_t* map);
 
 #endif

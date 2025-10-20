@@ -1,12 +1,12 @@
 #include "p_funcs.h"
 #include "v_funcs.h"
-#include "m_map.h"
+#include "map.h"
+#include "m_game.h"
 
 #include <stdbool.h>
 #include <SDL2/SDL_mixer.h>
 
-extern Mix_Chunk* gFootstep1;
-extern Mix_Chunk* gFootstep2;
+extern maingame_t game;
 
 void P_Move(player_t* p, const float speed)
 {
@@ -45,8 +45,6 @@ void P_HandleState(player_t* p, map_t* m, float dt)
         P_Rotate(p, p->rotateSpeed * dt);
     if(p->moveState & ROTATE_LEFT) // Player rotating left
         P_Rotate(p, -p->rotateSpeed * dt);
-    
-    V_SetMagnitude(&newAcc, 0.0001f);
 
     if(!V_GetMagnitude(newAcc))
     {
@@ -73,7 +71,7 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     if(V_GetMagnitude(p->vel) > 0.00007f && p->footstepSoundCooldown < 0)
     {
         p->footstepSoundCooldown = 500.f;
-        sound ? Mix_PlayChannel(-1, gFootstep1, 0) : Mix_PlayChannel(-1, gFootstep2, 0);
+        sound ? Mix_PlayChannel(-1, game.footstepSound1, 0) : Mix_PlayChannel(-1, game.footstepSound2, 0);
         sound = !sound;
     }
 

@@ -1,163 +1,22 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
-#include <SDL2/SDL_mixer.h>
-#include <stdio.h>
-#include <math.h>
-#include <float.h>
+#include "m_game.h"
 
-#include "p_player.h"
-#include "p_funcs.h"
-#include "w_window.h"
-#include "v_vert.h"
-#include "v_funcs.h"
-#include "r_draw.h"
-#include "m_map.h"
-#include "t_textures.h"
-#include "settings.h"
-#include "i_init.h"
 #include "logger.h"
 
-window_t gMainWindow;
-map_t gMap;
-player_t gPlayer;
+#ifdef linux
+#error linux support not implemented yet
+#endif
 
-Mix_Chunk* gFootstep1 = NULL;
-Mix_Chunk* gFootstep2 = NULL;
-
-bool shouldClose = false;
-
-void E_HandleEvents(float dt)
-{
-    SDL_Event e;
-    while(SDL_PollEvent(&e))
-    {
-        switch(e.type)
-        {
-        case SDL_QUIT:
-            shouldClose = true;
-            return;
-        }
-    }
-    const Uint8* keys = SDL_GetKeyboardState(NULL);
-    
-    if(keys[SDL_SCANCODE_ESCAPE])
-    {
-        shouldClose = true;
-        return;
-    }
-
-    if(keys[SDL_SCANCODE_W])
-        gPlayer.moveState |= 1;
-    else
-        gPlayer.moveState &= ~1;
-
-    if(keys[SDL_SCANCODE_S])
-        gPlayer.moveState |= 1 << 1;
-    else
-        gPlayer.moveState &= ~(1 << 1);
-
-    if(keys[SDL_SCANCODE_A])
-        gPlayer.moveState |= 1 << 2;
-    else
-        gPlayer.moveState &= ~(1 << 2);
-
-    if(keys[SDL_SCANCODE_D])
-        gPlayer.moveState |= 1 << 3;
-    else
-        gPlayer.moveState &= ~(1 << 3);
-
-    if(keys[SDL_SCANCODE_RIGHT])
-        gPlayer.moveState |= 1 << 4;
-    else
-        gPlayer.moveState &= ~(1 << 4);
-        
-    if(keys[SDL_SCANCODE_LEFT])
-        gPlayer.moveState |= 1 << 5;
-    else
-        gPlayer.moveState &= ~(1 << 5);
-    
-    Uint32 flags = SDL_GetWindowFlags(gMainWindow.sdlWindow);
-
-    if(flags & SDL_WINDOW_INPUT_FOCUS)
-    {
-        int x, _;
-        SDL_GetMouseState(&x, &_);
-
-        int deltaX = x - gMainWindow.width / 2;
-
-        P_Rotate(&gPlayer, deltaX * gPlayer.rotateSpeed * dt);
-        SDL_WarpMouseInWindow(gMainWindow.sdlWindow, gMainWindow.width / 2, gMainWindow.height / 2);
-
-        SDL_ShowCursor(SDL_DISABLE);
-    }
-    else
-    {
-        SDL_ShowCursor(SDL_ENABLE);
-    }
-}
+maingame_t game = { 0 };
 
 int main(int argc, char** argv)
 {
     LogMsg(DEBUG, "Starting RayCaster...\n");
 
-    if(argc < 2)
-    {
-        LogMsg(ERROR, "No map file specified\n\t\tUsage: RayCaster <map_file>\n");
-        return -1;
-    }
+    G_Init(&game);
 
-    // Initialise everything
-    I_InitLibs();
-    I_InitGraphics();
-    I_InitTextures();
-    I_InitPlayer();
-    I_InitAudio();
+    G_Run(&game);
 
-    // Load map from file
-    gMap = M_LoadMap(argv[1]);
-
-    if(gMap.mapData == NULL)
-    {
-        LogMsg(ERROR, "Failed to load map\n"); 
-        return -1;
-    }
-
-    float oldTime = (float)SDL_GetTicks();
-    // printf("First Frame\n");
-    while(!shouldClose)
-    {
-        SDL_Delay(1000.f / 60.f);
-        float newTime = (float)SDL_GetTicks();
-        float dt = newTime - oldTime;
-        float fps = 1000.f / dt;
-        oldTime = newTime;
-
-        char newTitle[64];
-        snprintf(newTitle, 64, "RayCaster %.0ffps", fps);
-                
-        SDL_SetWindowTitle(gMainWindow.sdlWindow, newTitle);
-
-        // Clear screen
-        SDL_SetRenderDrawColor(gMainWindow.sdlRenderer, 0, 0, 0, 0xff);
-        SDL_RenderClear(gMainWindow.sdlRenderer);
-
-        // Main loop
-        E_HandleEvents(dt);
-        P_HandleState(&gPlayer, &gMap, dt);
-
-        R_RenderCeilingAndFloor();
-        R_RenderPlayerView(&gPlayer, &gMap);
-        R_RenderPlayerGun(&gPlayer);
-        R_RenderMinimap(&gPlayer, &gMap);
-
-        // R_RenderMap(&gPlayer, &gMap);
-
-        // Present
-        SDL_RenderPresent(gMainWindow.sdlRenderer);
-
-    }
-
-    I_CleanUp();
+    G_Destroy(&game);
 
     return 0;
 }

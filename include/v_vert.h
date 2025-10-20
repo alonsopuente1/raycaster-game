@@ -1,5 +1,6 @@
-#ifndef _VERT_H_
-#define _VERT_H_
+
+#ifndef __V_VERT_H__
+#define __V_VERT_H__
 
 #include <math.h>
 

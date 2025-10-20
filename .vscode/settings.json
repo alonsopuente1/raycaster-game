@@ -1,5 +1,12 @@
 {
     "files.associations": {
-        "v_funcs.h": "c"
+        "v_funcs.h": "c",
+        "sdl_mixer.h": "c",
+        "r_draw.h": "c",
+        "window.h": "c",
+        "init.h": "c",
+        "map.h": "c",
+        "p_player.h": "c",
+        "texture.h": "c"
     }
 }

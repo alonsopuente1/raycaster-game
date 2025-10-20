@@ -3,7 +3,9 @@
 
 typedef struct map_s
 {
+    // flat 2d array
     int*    mapData;
+
     int     mapWidth;
     int     mapHeight;
 
@@ -12,8 +14,8 @@ typedef struct map_s
 
 // returns -1 on out of range value, passing NULL to map or passing index out of range of map
 extern int M_GetMapCell(map_t* map, int index);
-extern map_t M_LoadMap(const char* filePath);
+extern void M_LoadMap(map_t* map ,const char* filePath);
 // safe to pass a map with NULL data and/or NULL filePath
-extern  void M_Free(map_t map);
+extern void M_Free(map_t* map);
 
 #endif

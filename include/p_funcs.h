@@ -5,8 +5,10 @@
 
 typedef struct map_s map_t;
 
-extern void P_Move(player_t* p, const float speed);
-extern void P_Strafe(player_t* p, const float speed);
+// positive moves forward, negative backwards
+extern void P_Move(player_t* p, const float distance);
+// positive distance moves player left, negative moves player right
+extern void P_Strafe(player_t* p, const float distance);
 extern void P_Rotate(player_t* p, const float ang);
 // if map pointer passed, handle collision.
 // dt is passed in milliseconds

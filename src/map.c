@@ -1,4 +1,4 @@
-#include "m_map.h"
+#include "map.h"
 #include "stdio.h"
 #include <stdlib.h>
 #include "string.h"
@@ -8,10 +8,15 @@
 
 bool M_FillMapData(map_t* map, FILE* file);
 
-map_t M_LoadMap(const char* filePath)
+void M_LoadMap(map_t* map, const char* filePath)
 {
+    if(!map)
+    {
+        LogMsg(WARN, "passed null pointer to M_LoadMap\n");
+        return;
+    }
+
     FILE*       file;
-    map_t       out = {0};
     char        buffer[1024];
 
     file = fopen(filePath, "r");
@@ -19,18 +24,18 @@ map_t M_LoadMap(const char* filePath)
     if(!file)
     {
         LogMsgf(ERROR, "Failed to open map file: %s\n", filePath);
-        return out;
+        return;
     }
 
-    out.filePath = malloc(strlen(filePath) + 1);
-    if(!out.filePath)
+    map->filePath = malloc(strlen(filePath) + 1);
+    if(!map->filePath)
     {
         LogMsg(ERROR, "Failed to allocate memory for map file path\n");
         fclose(file);
-        return out;
+        return;
     }
-    strcpy(out.filePath, filePath);
-    out.filePath[strlen(filePath)] = '\0';
+    strcpy(map->filePath, filePath);
+    map->filePath[strlen(filePath)] = '\0';
 
     while(!feof(file))
     {
@@ -50,42 +55,39 @@ map_t M_LoadMap(const char* filePath)
         if(strcmp(token, "mapdim") == 0)
         {
             // check map dimensions are correct
-            out.mapWidth = atoi(strtok(NULL, " \t\n\r"));
-            out.mapHeight = atoi(strtok(NULL, " \t\n\r"));
-            if(out.mapWidth <= 0 || out.mapHeight <= 0)
+            map->mapWidth = atoi(strtok(NULL, " \t\n\r"));
+            map->mapHeight = atoi(strtok(NULL, " \t\n\r"));
+            if(map->mapWidth <= 0 || map->mapHeight <= 0)
             {
                 LogMsgf(ERROR, "Invalid map dimensions in map file %s\n", filePath);
                 fclose(file);
-                out = (map_t){0};
-                return out;
+                return;
             }
 
             // allocate memory for map data
-            out.mapData = malloc(sizeof(int) * out.mapWidth * out.mapHeight);
-            if(!out.mapData)
+            map->mapData = malloc(sizeof(int) * map->mapWidth * map->mapHeight);
+            if(!map->mapData)
             {
-                LogMsgf(ERROR, "Failed to allocate memory for map data (%d x %d) in map file %s\n", out.mapWidth, out.mapHeight, filePath);
+                LogMsgf(ERROR, "Failed to allocate memory for map data (%d x %d) in map file %s\n", map->mapWidth, map->mapHeight, filePath);
                 fclose(file);
-                out = (map_t){0};
-                return out;
+                return;
             }
 
             // debug info
-            LogMsgf(DEBUG, "Map dimensions: %d x %d\n", out.mapWidth, out.mapHeight);
-            memset(out.mapData, 0, sizeof(int) * out.mapWidth * out.mapHeight);
+            LogMsgf(DEBUG, "Map dimensions: %d x %d\n", map->mapWidth, map->mapHeight);
+            memset(map->mapData, 0, sizeof(int) * map->mapWidth * map->mapHeight);
             continue;
         }
 
         // read map data
         if(strcmp(token, "mapstart") == 0)
         {
-            if(!M_FillMapData(&out, file))
+            if(!M_FillMapData(map, file))
             {
                 LogMsgf(ERROR, "Failed to read map data in map file %s\n", filePath);
                 fclose(file);
-                M_Free(out);
-                out = (map_t){0};
-                return out;
+                M_Free(map);
+                return;
             }
 
             continue;
@@ -100,7 +102,7 @@ map_t M_LoadMap(const char* filePath)
 
     fclose(file);
 
-    return out;
+    return;
 }
 
 // doesn't handle freeing of map file path, map data or of file closing
@@ -162,12 +164,12 @@ bool M_FillMapData(map_t* map, FILE* file)
     return true;
 }
 
-void M_Free(map_t map)
+void M_Free(map_t* map)
 {
-    if(map.mapData)
-        free(map.mapData);
-    if(map.filePath)
-        free(map.filePath);
+    if(map->mapData)
+        free(map->mapData);
+    if(map->filePath)
+        free(map->filePath);
 }
 
 int M_GetMapCell(map_t* map, int index)
