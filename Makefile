@@ -12,13 +12,16 @@ C_FILES := $(subst src/,$(empty),$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
 OBJS := \
 	$(foreach file,$(C_FILES),$(OUT)/$(file:.c=.o)) \
 
-all: RayCaster
+all: | $(OUT) RayCaster 
 
 RayCaster: $(OBJS)
 	$(CC) -Wall -g $(OBJS) $(LINKFLAGS) -o RayCaster
 
 $(OUT)/%.o: $(SRC)/%.c
 	$(CC) -Wall -g $(CFLAGS) -c $< -o $@
+
+$(OUT):
+	mkdir -p $(OUT)
 
 clean:
 	rm $(OUT)/*.o
