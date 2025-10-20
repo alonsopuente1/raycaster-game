@@ -115,7 +115,7 @@ void R_RenderPlayerView(window_t* window, texturebank_t* texturebank, player_t* 
 
             if(M_GetMapCell(map, mapY * map->mapHeight + mapX) > 0) hit = 1;
         }
-        
+
         if(side == 0)   perpWallDist = (sideDist.x - deltaDist.x);
         else            perpWallDist = (sideDist.y - deltaDist.y);
         
@@ -326,6 +326,8 @@ void R_RenderMinimap(window_t* window, texturebank_t* texturebank, player_t* p, 
     int numVertices = 0;
     R_FormVerticesForCircleFromTexture(&vertices, &numVertices, 20, 0, (vertex2d_t){minimapRadius + 10, minimapRadius + 10}, minimapRadius, texturePos, 0.5f);
 
+    if(!vertices)
+
     if(SDL_RenderGeometry(window->sdlRenderer, minimapTex->data, vertices, numVertices, NULL, 0) < 0) 
         LogMsgf(ERROR, "SDL_RenderGeometry failed to render minimap. SDL_ERROR:%s\n", SDL_GetError());
 }
@@ -353,10 +355,28 @@ void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices
         return;
     }
 
+    if(!vertices)
+    {
+        LogMsg(WARN, "passed null ptr to vertices\n");
+        return;
+    }
+
+    if(!pNumVertices)
+    {
+        LogMsg(WARN, "passed null ptr to pNumVertices\n");
+        return;
+    }
+
     if(*vertices)
         free(*vertices);
 
     *vertices = malloc(sizeof(SDL_Vertex) * numTriangles * 3);
+    if(!*vertices)
+    {
+        LogMsg(ERROR, "failed to allocate memory for result vertices array\n");
+        return;
+    }
+    
     const int numVertices = numTriangles * 3;
 
     if(pNumVertices)
