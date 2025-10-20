@@ -217,9 +217,12 @@ void R_RenderPlayerGun(window_t* window, texturebank_t* texturebank, player_t* p
     dstRect.x += sinf(p->gunSway) * weaponTex->width * 0.5f;
     dstRect.y -= fabs(sinf(p->gunSway)) * weaponTex->height * 0.3f * ratio;
     
-    SDL_SetRenderDrawColor(window->sdlRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-    SDL_RenderDrawRectF(window->sdlRenderer, &dstRect);
-    
+    if(false)
+    {
+        SDL_SetRenderDrawColor(window->sdlRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+        SDL_RenderDrawRectF(window->sdlRenderer, &dstRect);
+    }
+
     SDL_RenderCopyF(window->sdlRenderer, weaponTex->data, NULL, &dstRect);
 }
 

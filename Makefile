@@ -15,7 +15,7 @@ OBJS := \
 all: RayCaster
 
 RayCaster: $(OBJS)
-	$(CC) -Wall -g $(OBJS) $(LINKFLAGS) -o ./build/RayCaster
+	$(CC) -Wall -g $(OBJS) $(LINKFLAGS) -o RayCaster
 
 $(OUT)/%.o: $(SRC)/%.c
 	$(CC) -Wall -g $(CFLAGS) -c $< -o $@
