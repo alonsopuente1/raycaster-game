@@ -1,4 +1,4 @@
-#include "window.h"
+#include "w_window.h"
 
 #include "logger.h"
 
@@ -36,6 +36,11 @@ bool W_InitWindow(window_t* window, const char* title, int width, int height)
     window->height = height;
 
     return true;
+}
+
+bool W_Initialised(window_t* window)
+{
+    return window->sdlWindow && window->sdlRenderer;
 }
 
 void W_DestroyWindow(window_t* window)

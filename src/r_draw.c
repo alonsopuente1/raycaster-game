@@ -12,32 +12,18 @@
 
 #include "logger.h"
 
-void R_RenderPlayerView(window_t* window, texturebank_t* texturebank, player_t* p, map_t* map)
+void R_RenderPlayerView(maingame_t* game)
 {
-    // check params
-    if(!window)
+    if(!game)
     {
-        LogMsg(WARN, "passed null ptr to window\n");
+        LogMsg(WARN, "passed null ptr to game\n");
         return;
     }
 
-    if(!texturebank)
-    {
-        LogMsg(WARN, "passed null ptr to texturebank\n");
-        return;
-    }
-    
-    if(!p)
-    {
-        LogMsg(WARN, "passed null ptr to player\n");
-        return;
-    }
-
-    if(!map)
-    {
-        LogMsg(WARN, "passed null ptr to map\n");
-        return;
-    }
+    texturebank_t*  texturebank = &game->texturebank;
+    player_t*       p = &game->player;
+    map_t*          map = &game->map;
+    window_t*       window = &game->window;
 
     vertex2d_t playerDir;
     vertex2d_t plane;
@@ -170,24 +156,17 @@ void R_RenderPlayerView(window_t* window, texturebank_t* texturebank, player_t* 
     }
 }
 
-void R_RenderPlayerGun(window_t* window, texturebank_t* texturebank, player_t* p)
+void R_RenderPlayerGun(maingame_t* game)
 {
-    if(!window)
+    if(!game)
     {
-        LogMsg(WARN, "passed null ptr to window\n");
+        LogMsg(WARN, "passed null ptr to game\n");
         return;
     }
 
-    if(!texturebank)
-    {
-        LogMsg(WARN, "passed null ptr to texturebank\n");
-        return;
-    }
-    if(!p)
-    {
-        LogMsg(WARN, "passed null ptr to player\n");
-        return;
-    }
+    window_t*       window = &game->window;
+    texturebank_t*  texturebank = &game->texturebank;
+    player_t*       p = &game->player;
 
     gun_t gun = p->currentGun;
     texture_t* weaponTex = NULL;
@@ -195,7 +174,7 @@ void R_RenderPlayerGun(window_t* window, texturebank_t* texturebank, player_t* p
     switch(gun)
     {
     case FISTS:
-        weaponTex = TB_FindTexture(texturebank, "FIST");
+        weaponTex = TB_FindTextureByName(texturebank, "FIST");
         break;
     default:
         weaponTex = NULL;
@@ -226,8 +205,16 @@ void R_RenderPlayerGun(window_t* window, texturebank_t* texturebank, player_t* p
     SDL_RenderCopyF(window->sdlRenderer, weaponTex->data, NULL, &dstRect);
 }
 
-void R_RenderCeilingAndFloor(window_t* window)
+void R_RenderCeilingAndFloor(maingame_t* game)
 {
+    if(!game)
+    {
+        LogMsg(WARN, "passed null ptr to game\n");
+        return;
+    }
+
+    window_t* window = &game->window;
+
     SDL_Rect dest = {0, 0, window->width, window->height / 2};
 
     SDL_SetRenderDrawColor(window->sdlRenderer, 0x40, 0x40, 0x40, 0xff);
@@ -239,9 +226,20 @@ void R_RenderCeilingAndFloor(window_t* window)
 
 
 // updates the minimap texture
-void R_UpdateMinimap(window_t* window, texturebank_t* texturebank, player_t* player, map_t* map)
+void R_UpdateMinimap(maingame_t* game)
 {
-    texture_t* minimapTex = TB_FindTexture(texturebank, "MINIMAP"), *playerTex = TB_FindTexture(texturebank, "player");
+    if(!game)
+    {
+        LogMsg(WARN, "passed null ptr to game\n");
+        return;
+    }
+
+    texturebank_t*  texturebank = &game->texturebank;
+    window_t*       window = &game->window;
+    map_t*          map = &game->map;
+    player_t*       player = &game->player;
+
+    texture_t* minimapTex = TB_FindTextureByName(texturebank, "MINIMAP"), *playerTex = TB_FindTextureByName(texturebank, "player");
     if(!minimapTex)
     {
         LogMsg(ERROR, "Failed to find target minimap texture\n");
@@ -311,11 +309,19 @@ void R_UpdateMinimap(window_t* window, texturebank_t* texturebank, player_t* pla
 }
 
 void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius);
-void R_RenderMinimap(window_t* window, texturebank_t* texturebank, player_t* p, map_t* map)
+void R_RenderMinimap(maingame_t* game)
 {
-    p = p; // to stop warning
-    R_UpdateMinimap(window, texturebank, p, map);
-    texture_t* minimapTex = TB_FindTexture(texturebank, "MINIMAP");
+    if(!game)
+    {
+        LogMsg(WARN, "passed null ptr to game\n");
+        return;
+    }
+
+    window_t*       window = &game->window;
+    texturebank_t*  texturebank = &game->texturebank;
+    
+    R_UpdateMinimap(game);
+    texture_t* minimapTex = TB_FindTextureByName(texturebank, "MINIMAP");
     if(!minimapTex)
     {
         LogMsg(ERROR, "Failed to find minimap texture\n");
@@ -330,6 +336,10 @@ void R_RenderMinimap(window_t* window, texturebank_t* texturebank, player_t* p, 
     R_FormVerticesForCircleFromTexture(&vertices, &numVertices, 20, 0, (vertex2d_t){minimapRadius + 10, minimapRadius + 10}, minimapRadius, texturePos, 0.5f);
 
     if(!vertices)
+    {
+        LogMsg(ERROR, "failed to get vertices for minimap\n");
+        return;
+    }
 
     if(SDL_RenderGeometry(window->sdlRenderer, minimapTex->data, vertices, numVertices, NULL, 0) < 0) 
         LogMsgf(ERROR, "SDL_RenderGeometry failed to render minimap. SDL_ERROR:%s\n", SDL_GetError());

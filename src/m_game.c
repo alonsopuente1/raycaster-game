@@ -11,6 +11,7 @@
 #include "p_funcs.h"
 #include "v_funcs.h"
 #include "settings.h"
+#include "fonts.h"
 
 #ifdef _WIN32
 #include <Windows.h>
@@ -71,6 +72,7 @@ bool G_InitTextures(maingame_t* game)
         return false;
     }
 
+
     *minimapTex = T_CreateBlankTexture(&game->window, "MINIMAP", 256, 256);
 
     if(minimapTex->data == NULL)
@@ -106,29 +108,36 @@ bool G_InitLibs()
         LogMsgf(ERROR, "Failed to initialise SDL_Mixer. MIX_ERROR: %s\n\tGetting out of here...\n", Mix_GetError());
         return false;
     }
+    if(TTF_Init() < 0)
+    {
+        LogMsgf(ERROR, "failed to initialise TTF_Fonts. TTF_ERROR: %s\n", TTF_GetError());
+        return false;
+    }
 
     return true;
 }
 
-bool G_InitGraphics(maingame_t* game)
+bool G_InitWindow(maingame_t* game)
 {
     if(!W_InitWindow(&game->window, "RayCaster", 1280, 720))
     {
         LogMsg(ERROR, "FATAL: failed to create main window\n");
         return false;
     }
-    LogMsg(INFO, "Graphics initialised successfully\n");
+    LogMsg(INFO, "Main window initialised successfully\n");
 
     return true;
 }
 
-void G_InitPlayer(maingame_t* game)
+bool G_InitPlayer(maingame_t* game)
 {
     game->player.pos         = V_Make(4.0f, 4.0f);
     game->player.viewAngle   = 0.0f;
     game->player.maxMoveSpeed= MOVESPEED;
     game->player.rotateSpeed = ROTATESPEED;
     game->player.footstepSoundCooldown = 500.f;
+    
+    return true;
 }
 
 bool G_InitAudio(maingame_t* game)
@@ -155,25 +164,19 @@ bool G_InitAudio(maingame_t* game)
 
 void G_Init(maingame_t* game)
 {
-    if(game->running)
-    {
-        LogMsg(WARN, "trying to create maingame when already created\n");
-        return;
-    }
-
     if(!game)
     {
-        LogMsg(WARN, "passing null for initialising game\n");
+        LogMsg(ERROR, "passing null ptr to game\n");
         return;
     }
 
     G_InitLibs();
-    G_InitGraphics(game);
-    G_InitPlayer(game);
-    G_InitAudio(game);
-    G_InitTextures(game);
+    G_InitWindow(game);
+    FontInit();
 
-    M_LoadMap(&game->map, "res/maps/map1.sdm");
+    game->gameState = STATE_NONE;
+
+    G_ChangeGamestate(game, STATE_MAINMENU);
 
     game->running = true;
 }
@@ -184,68 +187,14 @@ void G_HandleEvents(maingame_t* game)
 
     while(SDL_PollEvent(&e))
     {
-        switch(e.type)
+        switch(game->gameState)
         {
-        case SDL_QUIT:
-            game->running = false;
-            return;
+        case STATE_MAINMENU:
+            G_HandleEventsMainMenu(game, &e);
+            break;
+        case STATE_GAME:
+            G_HandleEventsGame(game, &e);       
         }
-    }
-    const Uint8* keys = SDL_GetKeyboardState(NULL);
-    
-    if(keys[SDL_SCANCODE_ESCAPE])
-    {
-        game->running = false;
-        return;
-    }
-
-    if(keys[SDL_SCANCODE_W])
-        game->player.moveState |= 1;
-    else
-        game->player.moveState &= ~1;
-
-    if(keys[SDL_SCANCODE_S])
-        game->player.moveState |= 1 << 1;
-    else
-        game->player.moveState &= ~(1 << 1);
-
-    if(keys[SDL_SCANCODE_A])
-        game->player.moveState |= 1 << 2;
-    else
-        game->player.moveState &= ~(1 << 2);
-
-    if(keys[SDL_SCANCODE_D])
-        game->player.moveState |= 1 << 3;
-    else
-        game->player.moveState &= ~(1 << 3);
-
-    if(keys[SDL_SCANCODE_RIGHT])
-        game->player.moveState |= 1 << 4;
-    else
-        game->player.moveState &= ~(1 << 4);
-        
-    if(keys[SDL_SCANCODE_LEFT])
-        game->player.moveState |= 1 << 5;
-    else
-        game->player.moveState &= ~(1 << 5);
-    
-    Uint32 flags = SDL_GetWindowFlags(game->window.sdlWindow);
-
-    if(flags & SDL_WINDOW_INPUT_FOCUS)
-    {
-        int x, _;
-        SDL_GetMouseState(&x, &_);
-
-        int deltaX = x - game->window.width / 2;
-
-        P_Rotate(&game->player, deltaX * game->player.rotateSpeed);
-        SDL_WarpMouseInWindow(game->window.sdlWindow, game->window.width / 2, game->window.height / 2);
-
-        SDL_ShowCursor(SDL_DISABLE);
-    }
-    else
-    {
-        SDL_ShowCursor(SDL_ENABLE);
     }
 }
 
@@ -256,21 +205,29 @@ void G_Update(maingame_t* game, float dt)
     snprintf(newTitle, 63, "RayCaster %.0ffps", fps);
     SDL_SetWindowTitle(game->window.sdlWindow, newTitle);
 
-    P_HandleState(&game->player, &game->map, dt);
+    switch(game->gameState)
+    {
+    case STATE_GAME:
+        G_UpdateGame(game, dt);
+        break;
+    default:
+        break;
+    }
 }
 
 void G_Draw(maingame_t* game)
 {
-    // Clear screen
-    SDL_SetRenderDrawColor(game->window.sdlRenderer, 0, 0, 0, 0xff);
-    SDL_RenderClear(game->window.sdlRenderer);
-        
-    R_RenderCeilingAndFloor(&game->window);
-    R_RenderPlayerView(&game->window, &game->texturebank, &game->player, &game->map);
-    R_RenderPlayerGun(&game->window, &game->texturebank, &game->player);
-    R_RenderMinimap(&game->window, &game->texturebank, &game->player, &game->map);
-    
-    SDL_RenderPresent(game->window.sdlRenderer);
+    switch(game->gameState)
+    {
+    case STATE_MAINMENU:
+        G_DrawMainMenu(game);
+        break;
+    case STATE_GAME:
+        G_DrawGame(game);
+        break;
+    default:
+        break;
+    }
 }
 
 void G_Destroy(maingame_t* game)
@@ -282,10 +239,15 @@ void G_Destroy(maingame_t* game)
     if(game->footstepSound2)
         Mix_FreeChunk(game->footstepSound2);
 
+    if(game->screenButtons)
+        free(game->screenButtons);
+
     TB_FreeAllTextures(&game->texturebank);
 
     FreeLogs();
 
+    FontCleanup();
+    TTF_Quit();
     Mix_Quit();
     IMG_Quit();
     SDL_Quit();

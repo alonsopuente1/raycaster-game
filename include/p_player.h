@@ -25,7 +25,9 @@ typedef struct player_s
     vertex2d_t      pos;
 
     float           rotateSpeed;
-    char            moveState;  // first bit = forward, second bit = backward, third bit = left, fourth bit = right, fifth bit = rotate right, sixth bit = rotate left
+    // first bit = forward, second bit = backward, third bit = left, 
+    // fourth bit = right, fifth bit = rotate right, sixth bit = rotate left
+    char            moveState;  
     
     gun_t           currentGun; 
     float           gunSway;

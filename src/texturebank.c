@@ -1,7 +1,7 @@
 #include "texturebank.h"
 
 #include "logger.h"
-#include "window.h"
+#include "w_window.h"
 
 // returns null when theres no textures allocated
 struct texturenode_s* TB_GetLastNode(texturebank_t* texturebank)
@@ -95,6 +95,7 @@ int TB_NumTextures(texturebank_t* texturebank)
     return i;
 }
 
+// safe to pass null
 void TB_FreeAllTextures(texturebank_t* texturebank)
 {
     if(!texturebank)
@@ -112,10 +113,12 @@ void TB_FreeAllTextures(texturebank_t* texturebank)
         T_FreeTexture(&temp->data);
         free(temp);
     }
+
+    texturebank->headNode = NULL;
 }
 
 // returns true on success, false on failure
-bool TB_RemoveTexture(texturebank_t* texturebank, const char* texturename)
+bool TB_RemoveTextureByName(texturebank_t* texturebank, const char* texturename)
 {
     if(!texturebank)
     {
@@ -129,6 +132,39 @@ bool TB_RemoveTexture(texturebank_t* texturebank, const char* texturename)
     while(currentNode)
     {
         if(strcmp(currentNode->data.name, texturename) == 0)
+        {
+            // this means that the head of the linked list is the texture being searched for
+            if(!prevNode)
+                texturebank->headNode = texturebank->headNode->nextNode;
+
+            prevNode->nextNode = currentNode->nextNode;
+
+            T_FreeTexture(&currentNode->data);
+            free(currentNode);
+            return true;
+        }
+
+        prevNode = currentNode;
+        currentNode = currentNode->nextNode;
+    }
+
+    return false;
+}
+
+bool TB_RemoveTextureByPtr(texturebank_t* texturebank, texture_t* ptr)
+{
+    if(!texturebank)
+    {
+        LogMsg(WARN, "passed null to texture bank\n");
+        return false;
+    }
+
+    struct texturenode_s* prevNode = NULL;
+    struct texturenode_s* currentNode = texturebank->headNode;
+
+    while(currentNode)
+    {
+        if(&currentNode->data == ptr)
         {
             // this means that the head of the linked list is the texture being searched for
             if(!prevNode)
@@ -167,7 +203,7 @@ texture_t* TB_GetTextureByIndex(texturebank_t* texturebank, int index)
     return &currentNode->data;
 }
 
-texture_t* TB_FindTexture(texturebank_t* texturebank, const char* texturename)
+texture_t* TB_FindTextureByName(texturebank_t* texturebank, const char* texturename)
 {
     if(!texturebank)
     {
@@ -188,4 +224,27 @@ texture_t* TB_FindTexture(texturebank_t* texturebank, const char* texturename)
     }
 
     return NULL;
+}
+
+bool TB_IsTexInTextureBank(texturebank_t* texturebank, texture_t* ptr)
+{
+    if(!texturebank)
+    {
+        LogMsg(WARN, "passed null to texture bank\n");
+        return false;
+    }
+
+    struct texturenode_s* currentNode = texturebank->headNode;
+
+    while(currentNode)
+    {
+        if(&currentNode->data == ptr)
+        {
+            return true;
+        }
+
+        currentNode = currentNode->nextNode;
+    }
+
+    return false;
 }

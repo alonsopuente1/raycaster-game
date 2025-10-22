@@ -3,6 +3,8 @@
 # first number is the mapWidth second is mapHeight
 mapdim 24 24
 
+playerstart 4 4
+
 mapstart
 111111111111111111111111
 100000000000000000000001

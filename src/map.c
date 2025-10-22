@@ -3,16 +3,26 @@
 #include <stdlib.h>
 #include "string.h"
 #include "logger.h"
+#include "v_funcs.h"
 
 #include <stdbool.h>
 
 bool M_FillMapData(map_t* map, FILE* file);
 
-void M_LoadMap(map_t* map, const char* filePath)
+void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
 {
+    #define CLEANUP()   fclose(file);\
+                        M_Free(map)
+                        
     if(!map)
     {
         LogMsg(WARN, "passed null pointer to M_LoadMap\n");
+        return;
+    }
+
+    if(!mapArgs)
+    {
+        LogMsg(WARN, "passed null ptr to mapArgs\n");
         return;
     }
 
@@ -20,6 +30,8 @@ void M_LoadMap(map_t* map, const char* filePath)
     char        buffer[1024];
 
     file = fopen(filePath, "r");
+
+    mapArgs->success = false;
 
     if(!file)
     {
@@ -31,7 +43,7 @@ void M_LoadMap(map_t* map, const char* filePath)
     if(!map->filePath)
     {
         LogMsg(ERROR, "Failed to allocate memory for map file path\n");
-        fclose(file);
+        CLEANUP();
         return;
     }
     strcpy(map->filePath, filePath);
@@ -60,7 +72,7 @@ void M_LoadMap(map_t* map, const char* filePath)
             if(map->mapWidth <= 0 || map->mapHeight <= 0)
             {
                 LogMsgf(ERROR, "Invalid map dimensions in map file %s\n", filePath);
-                fclose(file);
+                CLEANUP();
                 return;
             }
 
@@ -69,7 +81,7 @@ void M_LoadMap(map_t* map, const char* filePath)
             if(!map->mapData)
             {
                 LogMsgf(ERROR, "Failed to allocate memory for map data (%d x %d) in map file %s\n", map->mapWidth, map->mapHeight, filePath);
-                fclose(file);
+                CLEANUP();
                 return;
             }
 
@@ -85,12 +97,25 @@ void M_LoadMap(map_t* map, const char* filePath)
             if(!M_FillMapData(map, file))
             {
                 LogMsgf(ERROR, "Failed to read map data in map file %s\n", filePath);
-                fclose(file);
-                M_Free(map);
+                CLEANUP();
                 return;
             }
 
             continue;
+        }
+
+        // player data
+        if(strcmp(token, "playerstart") == 0)
+        {
+            float x = atof(strtok(NULL, " \t\n\r")) , y = atof(strtok(NULL, " \t\n\r"));
+            if(x == 0 || y == 0)
+            {
+                LogMsg(ERROR, "failed to load playerstart co-ords\n");
+                CLEANUP();
+                return;
+            }
+
+            mapArgs->startPos = V_Make(x, y);
         }
 
         if(strcmp(token, "fileend") == 0)
@@ -101,6 +126,9 @@ void M_LoadMap(map_t* map, const char* filePath)
     }
 
     fclose(file);
+    mapArgs->success = true;
+
+    #undef CLEANUP
 
     return;
 }

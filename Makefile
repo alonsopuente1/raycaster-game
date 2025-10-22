@@ -1,7 +1,7 @@
 CC 			= gcc
 
 CFLAGS		= -I./include -Wextra -Wall
-LINKFLAGS	= -L./lib -lSDL2main -l:libSDL2_mixer.a -lWinmm -lSDL2 -lSDL2_image -lm -l:logger64.a 
+LINKFLAGS	= -L./lib -lSDL2main -l:libSDL2_mixer.a -lWinmm -l:libSDL2_ttf.a -lSDL2 -lSDL2_image -lm -l:logger64.a -lGdi32 -lRpcrt4
 
 # folder to store .o files
 OUT			= build

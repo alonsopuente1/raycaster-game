@@ -7,6 +7,9 @@
         "init.h": "c",
         "map.h": "c",
         "p_player.h": "c",
-        "texture.h": "c"
+        "texture.h": "c",
+        "m_game.h": "c",
+        "m_gamestate.h": "c",
+        "texturebank.h": "c"
     }
 }

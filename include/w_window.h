@@ -1,5 +1,5 @@
-#ifndef __WINDOW_H__
-#define __WINDOW_H__
+#ifndef __W_WINDOW_H__
+#define __W_WINDOW_H__
 
 #include <SDL2/SDL.h>
 #include <stdbool.h>
@@ -15,9 +15,12 @@ typedef struct window_s
 } window_t;
 
 // returns true on success, false on failure
-bool W_InitWindow(window_t* window, const char* title, int width, int height);
+extern bool W_InitWindow(window_t* window, const char* title, int width, int height);
+
+// returns true if window initialised, false if not
+extern bool W_Initialised(window_t* window);
 
 // safe to pass null
-void W_DestroyWindow(window_t* window);
+extern void W_DestroyWindow(window_t* window);
 
 #endif
