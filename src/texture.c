@@ -3,7 +3,7 @@
 #include <SDL2/SDL_image.h>
 
 #include "settings.h"
-#include "window.h"
+#include "w_window.h"
 
 #include "logger.h"
 

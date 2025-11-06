@@ -230,19 +230,40 @@ void G_Draw(maingame_t* game)
     }
 }
 
-void G_Destroy(maingame_t* game)
+void G_CleanupResources(maingame_t* game)
 {
+    if(!game)
+        return;
+
     M_Free(&game->map);
 
     if(game->footstepSound1)
+    {
         Mix_FreeChunk(game->footstepSound1);
+        game->footstepSound1 = NULL;
+    }
+
     if(game->footstepSound2)
+    {
         Mix_FreeChunk(game->footstepSound2);
+        game->footstepSound2 = NULL;
+    }
 
     if(game->screenButtons)
+    {
         free(game->screenButtons);
+        game->screenButtons = NULL;
+    }
 
     TB_FreeAllTextures(&game->texturebank);
+}
+
+void G_Destroy(maingame_t* game)
+{
+    if(!game)
+        return;
+
+    G_CleanupResources(game);
 
     FreeLogs();
 

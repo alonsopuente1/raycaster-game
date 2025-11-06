@@ -9,4 +9,5 @@ cd into the root directory of repo then run
 make -j
 ```
 ## Screenshots 
-![screenshot of "game"](image.png)
+![screenshot of "game"](res/screenshots/game.png)
+![screenshot of main menu](res/screenshots/mainmenu.png)

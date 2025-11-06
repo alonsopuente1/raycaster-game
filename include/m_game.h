@@ -46,6 +46,9 @@ extern void G_HandleEvents(maingame_t* game);
 extern void G_Update(maingame_t* game, float dt);
 extern void G_Draw(maingame_t* game);
 
+// only frees resources allocated specifically for any game states
+// e.g sound textures, map data, etc but not window
+extern void G_CleanupResources(maingame_t* game);
 extern void G_Destroy(maingame_t* game);
 
 #endif

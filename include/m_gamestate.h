@@ -13,6 +13,8 @@ typedef enum maingamestate_e
 
 } maingamestate_t;
 
+// changing gamestates always cleans up all resources before setting up new gamestate
+// so no need to clean up resources before
 extern void G_ChangeGamestate(maingame_t* game, maingamestate_t newGamestate);
 
 extern void G_HandleEventsMainMenu(maingame_t* game, SDL_Event* e);

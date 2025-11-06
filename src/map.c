@@ -195,9 +195,15 @@ bool M_FillMapData(map_t* map, FILE* file)
 void M_Free(map_t* map)
 {
     if(map->mapData)
-        free(map->mapData);
+    {
+       free(map->mapData);
+       map->mapData = NULL;
+    }
     if(map->filePath)
+    {
         free(map->filePath);
+        map->filePath = NULL;
+    }
 }
 
 int M_GetMapCell(map_t* map, int index)
