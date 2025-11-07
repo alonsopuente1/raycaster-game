@@ -10,6 +10,8 @@
         "texture.h": "c",
         "m_game.h": "c",
         "m_gamestate.h": "c",
-        "texturebank.h": "c"
+        "texturebank.h": "c",
+        "m_state.h": "c",
+        "p_funcs.h": "c"
     }
 }

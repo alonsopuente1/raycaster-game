@@ -12,9 +12,14 @@
 #include "v_funcs.h"
 #include "settings.h"
 #include "fonts.h"
+#include "m_state.h"
+#include "m_gamestate.h"
+#include "m_mainmenustate.h"
 
 #ifdef _WIN32
 #include <Windows.h>
+#else
+#error "Unsupported platform"
 #endif
 
 // File paths for all textures to be loaded

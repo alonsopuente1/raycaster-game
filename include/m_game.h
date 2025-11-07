@@ -1,15 +1,17 @@
 #ifndef __M_GAME_H__
 #define __M_GAME_H__
 
-#include "w_window.h"
-#include "w_buttons.h"
-#include "p_player.h"
-#include "texture.h"
 #include "map.h"
-#include <SDL2/SDL_mixer.h>
+#include "w_window.h"
 #include "texturebank.h"
+#include "p_player.h"
+#include "m_state.h"
 
-#include "m_gamestate.h"
+#include <stdbool.h>
+#include <SDL2/SDL_mixer.h>
+
+typedef struct winButton_s winButton_t;
+typedef struct player_s player_t;
 
 // this contains the main game data and game loop
 
