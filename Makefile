@@ -1,6 +1,6 @@
 CC 			= gcc
 
-CFLAGS		= -g -I./include -Wextra -Wall
+CFLAGS		= -g -I./include -Wextra -Wall -Wno-unused-parameter
 LINKFLAGS	= -g -L./lib -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_image -llogger64 -lWinmm -lGdi32 -lRpcrt4 
 
 # folder to store .o files

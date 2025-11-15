@@ -79,6 +79,6 @@ texture_t* F_CreateText(maingame_t* dst, SDL_Color colour, TTF_Font* font, const
 
 void FontCleanup()
 {
-    for(int i = 0; i < sizeof(fonts) / sizeof(TTF_Font*); i++)
+    for(int i = 0; i < (int)sizeof(fonts) / (int)sizeof(TTF_Font*); i++)
         TTF_CloseFont(fonts[i]);
 }

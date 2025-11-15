@@ -129,6 +129,6 @@ void MMS_Destroy(void* scene, maingame_t* game)
 
     mainMenuScene_t* mmScene = (mainMenuScene_t*)scene;
 
-    W_DestroyButton(&((mainMenuScene_t*)scene)->startButton);
-    W_DestroyButton(&((mainMenuScene_t*)scene)->exitButton);
+    W_DestroyButton(&mmScene->startButton);
+    W_DestroyButton(&mmScene->exitButton);
 }

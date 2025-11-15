@@ -182,7 +182,7 @@ void GS_Draw(void* scene, maingame_t* game)
     SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
     SDL_RenderClear(render);
 
-    R_RenderCeilingAndFloor(gScene, game);
+    R_RenderCeilingAndFloor(game);
     R_RenderPlayerView(gScene, game);
     R_RenderPlayerGun(gScene, game);
     R_RenderMinimap(gScene, game);

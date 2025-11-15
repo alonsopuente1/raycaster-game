@@ -205,7 +205,7 @@ void R_RenderPlayerGun(gamescene_t* scene, maingame_t* game)
     SDL_RenderCopyF(window->sdlRenderer, weaponTex->data, NULL, &dstRect);
 }
 
-void R_RenderCeilingAndFloor(gamescene_t* scene, maingame_t* game)
+void R_RenderCeilingAndFloor(maingame_t* game)
 {
     if(!game)
     {
@@ -320,12 +320,11 @@ void R_RenderMinimap(gamescene_t* scene, maingame_t* game)
     }
 
     window_t*       window = &game->window;
-    texturebank_t*  texturebank = &game->texturebank;
-    
-    texture_t* minimapTex = R_UpdateMinimap(scene, game);
+    texture_t*      minimapTex = R_UpdateMinimap(scene, game);
+
     if(!minimapTex)
     {
-        LogMsg(ERROR, "Failed to find minimap texture\n");
+        LogMsg(ERROR, "Failed to find minimap texture. did you forget to add an empty texture called MINIMAP to the games texturebank?\n");
         return;
     }
     
