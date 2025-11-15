@@ -16,8 +16,6 @@ winButton_t W_CreateButton(maingame_t* game, SDL_Rect rect, SDL_Color colour)
     output.rect = rect;
     output.backgroundColor = colour;
 
-    memset(&output.text, 0, sizeof(output.text));
-
     output.parentGame = game;
 
     return output;
@@ -88,4 +86,23 @@ void W_DrawButton(winButton_t* button)
         if(SDL_RenderCopy(button->parentGame->window.sdlRenderer, button->text->data, NULL, &button->rect) < 0)
             LogMsgf(WARN, "failed to render text to button. SDL_ERROR: %s\n", SDL_GetError());
     SDL_SetRenderDrawBlendMode(button->parentGame->window.sdlRenderer, SDL_BLENDMODE_NONE);
+}
+
+
+void W_DestroyButton(winButton_t* button)
+{
+    if(!button)
+    {
+        LogMsg(WARN, "passed null ptr to button\n");
+        return;
+    }
+
+    if(button->text)
+        if(!TB_RemoveTextureByPtr(&button->parentGame->texturebank, button->text))
+            LogMsg(ERROR, "MEMORY LEAK failed to free button text texture\n");
+
+    button->backgroundColor = (SDL_Color){0,0,0,0};
+    button->parentGame = NULL;
+    button->rect = (SDL_Rect){0,0,0,0};
+    button->text = NULL;
 }

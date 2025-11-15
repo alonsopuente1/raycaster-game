@@ -5,8 +5,19 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef __GNUC__
-#error Must use gcc for function names to log correctly!
+/* logger.h
+
+    functions for logging messages in the console
+
+    define a pre-processor macro called LOGMSG to compile with logging
+    enabled
+
+*/
+
+#ifdef __GNUC__
+#define funcname __FUNCTION__
+#else
+#define funcname __func__
 #endif
 
 #define logmaxchr 1024
@@ -19,14 +30,22 @@
     _PushMsg(lvl, input, __LINE__, __FILE__);\
 }\
 
-// only works in gcc
-#define LogMsg(lvl, msg) _LogMsg(lvl, msg, __LINE__, __FILE__, __FUNCTION__)
 
+#ifdef LOGMSGS
+// only works in gcc
+#define LogMsg(lvl, msg) _LogMsg(lvl, msg, __LINE__, __FILE__, funcname)
 #define LogMsgf(lvl, format, ...) {\
     char input[logmaxchr] = {0};\
     snprintf(input, logmaxchr, format, __VA_ARGS__);\
     _LogMsg(lvl, input, __LINE__, __FILE__, __FUNCTION__);\
 }\
+
+#else
+
+#define LogMsg(lvl, msg)
+#define LogMsgf(lvl, format, ...)
+
+#endif
 
 typedef enum
 {

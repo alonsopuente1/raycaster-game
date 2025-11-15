@@ -10,6 +10,8 @@ typedef struct maploadargs_s
     // stores start position of player in map
     vertex2d_t  startPos;
 
+    float       maxSpeed;
+
     // true when map loaded successfully
     bool        success;
 

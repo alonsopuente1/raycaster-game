@@ -19,7 +19,7 @@ void FontInit()
     {
         fonts[i] = TTF_OpenFont(fontFilePath[i], 16);
         if(!fonts[i])
-            LogMsgf(WARN, "failed to load font at filepath '%s'", fontFilePath[i]);
+            LogMsgf(WARN, "failed to load font at filepath '%s'. TTF_ERROR: %s\n", fontFilePath[i], TTF_GetError());
     }
 }
 

@@ -12,6 +12,10 @@
         "m_gamestate.h": "c",
         "texturebank.h": "c",
         "m_state.h": "c",
-        "p_funcs.h": "c"
+        "p_funcs.h": "c",
+        "logger.h": "c",
+        "s_scene.h": "c",
+        "s_gamescene.h": "c",
+        "s_mainmenuscene.h": "c"
     }
 }

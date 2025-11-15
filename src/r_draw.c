@@ -12,7 +12,7 @@
 
 #include "logger.h"
 
-void R_RenderPlayerView(maingame_t* game)
+void R_RenderPlayerView(gamescene_t* scene, maingame_t* game)
 {
     if(!game)
     {
@@ -21,8 +21,8 @@ void R_RenderPlayerView(maingame_t* game)
     }
 
     texturebank_t*  texturebank = &game->texturebank;
-    player_t*       p = &game->player;
-    map_t*          map = &game->map;
+    player_t*       p = &scene->player;
+    map_t*          map = &scene->map;
     window_t*       window = &game->window;
 
     vertex2d_t playerDir;
@@ -156,7 +156,7 @@ void R_RenderPlayerView(maingame_t* game)
     }
 }
 
-void R_RenderPlayerGun(maingame_t* game)
+void R_RenderPlayerGun(gamescene_t* scene, maingame_t* game)
 {
     if(!game)
     {
@@ -166,7 +166,7 @@ void R_RenderPlayerGun(maingame_t* game)
 
     window_t*       window = &game->window;
     texturebank_t*  texturebank = &game->texturebank;
-    player_t*       p = &game->player;
+    player_t*       p = &scene->player;
 
     gun_t gun = p->currentGun;
     texture_t* weaponTex = NULL;
@@ -205,7 +205,7 @@ void R_RenderPlayerGun(maingame_t* game)
     SDL_RenderCopyF(window->sdlRenderer, weaponTex->data, NULL, &dstRect);
 }
 
-void R_RenderCeilingAndFloor(maingame_t* game)
+void R_RenderCeilingAndFloor(gamescene_t* scene, maingame_t* game)
 {
     if(!game)
     {
@@ -225,31 +225,31 @@ void R_RenderCeilingAndFloor(maingame_t* game)
 }
 
 
-// updates the minimap texture
-void R_UpdateMinimap(maingame_t* game)
+// updates the minimap texture and returns it if successful
+texture_t* R_UpdateMinimap(gamescene_t* scene, maingame_t* game)
 {
     if(!game)
     {
         LogMsg(WARN, "passed null ptr to game\n");
-        return;
+        return NULL;
     }
 
     texturebank_t*  texturebank = &game->texturebank;
     window_t*       window = &game->window;
-    map_t*          map = &game->map;
-    player_t*       player = &game->player;
+    map_t*          map = &scene->map;
+    player_t*       player = &scene->player;
 
     texture_t* minimapTex = TB_FindTextureByName(texturebank, "MINIMAP"), *playerTex = TB_FindTextureByName(texturebank, "player");
     if(!minimapTex)
     {
-        LogMsg(ERROR, "Failed to find target minimap texture\n");
-        return;
+        LogMsg(ERROR, "Failed to find target minimap texture. did you forget to add a blank texture called 'MINIMAP' to game texturebank?\n");
+        return NULL;
     }
     
     if(!playerTex)
     {
         LogMsg(ERROR, "Failed to find target player texture\n");
-        return;
+        return NULL;
     }
 
     SDL_Texture* blueCell = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
@@ -300,16 +300,18 @@ void R_UpdateMinimap(maingame_t* game)
     }
     SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_NONE);
 
-    SDL_RenderCopy(window->sdlRenderer, playerTex->data, NULL, &(SDL_Rect){(int)(minimapTex->width / 2) - 2, (int)(minimapTex->height / 2) - 2, 4, 4});
+    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 255, 0, 255);
 
     SDL_SetRenderTarget(window->sdlRenderer, NULL);
 
     SDL_DestroyTexture(blackCell);
     SDL_DestroyTexture(blueCell);
+
+    return minimapTex;
 }
 
 void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius);
-void R_RenderMinimap(maingame_t* game)
+void R_RenderMinimap(gamescene_t* scene, maingame_t* game)
 {
     if(!game)
     {
@@ -320,8 +322,7 @@ void R_RenderMinimap(maingame_t* game)
     window_t*       window = &game->window;
     texturebank_t*  texturebank = &game->texturebank;
     
-    R_UpdateMinimap(game);
-    texture_t* minimapTex = TB_FindTextureByName(texturebank, "MINIMAP");
+    texture_t* minimapTex = R_UpdateMinimap(scene, game);
     if(!minimapTex)
     {
         LogMsg(ERROR, "Failed to find minimap texture\n");

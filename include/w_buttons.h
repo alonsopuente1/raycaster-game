@@ -17,10 +17,11 @@ typedef struct winButton_s
 
 } winButton_t;
 
-extern winButton_t W_CreateButton(maingame_t* game, SDL_Rect rect, SDL_Color colour);
+extern winButton_t W_CreateButton(maingame_t* game, SDL_Rect rect, SDL_Color backgroundColour);
 extern void W_SetButtonText(winButton_t* button, const char* src);
 extern void W_SetButtonRect(winButton_t* button, SDL_Rect src);
 // since button already has parent window, it can draw
 extern void W_DrawButton(winButton_t* button);
+extern void W_DestroyButton(winButton_t* button);
 
 #endif

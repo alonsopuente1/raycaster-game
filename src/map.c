@@ -118,6 +118,20 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             mapArgs->startPos = V_Make(x, y);
         }
 
+        if(strcmp(token, "playermaxspeed") == 0)
+        {
+            float maxSpeed = atof(strtok(NULL, " \t\n\r"));
+            if(maxSpeed == 0.0f)
+            {
+                LogMsg(ERROR, "failed to load maxSpeed for player");
+                CLEANUP();
+                return;
+            }
+
+            mapArgs->maxSpeed = maxSpeed;
+            continue;
+        }
+
         if(strcmp(token, "fileend") == 0)
         {
             LogMsgf(DEBUG, "Reached end of map data in map file %s\n", filePath);

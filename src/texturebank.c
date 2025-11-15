@@ -169,8 +169,8 @@ bool TB_RemoveTextureByPtr(texturebank_t* texturebank, texture_t* ptr)
             // this means that the head of the linked list is the texture being searched for
             if(!prevNode)
                 texturebank->headNode = texturebank->headNode->nextNode;
-
-            prevNode->nextNode = currentNode->nextNode;
+            else
+                prevNode->nextNode = currentNode->nextNode;
 
             T_FreeTexture(&currentNode->data);
             free(currentNode);

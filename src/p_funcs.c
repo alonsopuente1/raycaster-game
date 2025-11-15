@@ -64,16 +64,6 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     while(p->gunSway > acosf(-1) * 2)
         p->gunSway -= acosf(-1) * 2;
 
-    if(p->footstepSoundCooldown > -1000.f)
-        p->footstepSoundCooldown -= dt;
-
-    static bool sound = false;
-    if(V_GetMagnitude(p->vel) > 0.00007f && p->footstepSoundCooldown < 0)
-    {
-        p->footstepSoundCooldown = 500.f;
-        sound ? Mix_PlayChannel(-1, game.footstepSound1, 0) : Mix_PlayChannel(-1, game.footstepSound2, 0);
-        sound = !sound;
-    }
 
     p->pos = V_Add(p->pos, V_Mul(p->vel, dt));
     vertex2d_t deltaPos = V_Sub(p->pos, oldPos);
