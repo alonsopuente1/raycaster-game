@@ -12,7 +12,11 @@
     define a pre-processor macro called LOGMSG to compile with logging
     enabled
 
+    IMPORTANT:  change the below macro LOGMSGS to 1 for message logging to be enabled
+                0 for it to be disabled
 */
+
+#define LOGMSGS 1
 
 #ifdef __GNUC__
 #define funcname __FUNCTION__
@@ -31,7 +35,7 @@
 }\
 
 
-#ifdef LOGMSGS
+#if LOGMSGS
 // only works in gcc
 #define LogMsg(lvl, msg) _LogMsg(lvl, msg, __LINE__, __FILE__, funcname)
 #define LogMsgf(lvl, format, ...) {\

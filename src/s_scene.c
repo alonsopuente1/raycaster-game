@@ -40,8 +40,6 @@ scene_t S_CreateScene(maingame_t* parentGame, void* scene, unsigned int size, co
     memcpy(newScene.data, scene, size);
     memset(newScene.data, 0, size);
 
-    printf("size: %i\n", size);
-
     SetupFunc* setupPtr = (SetupFunc*)scene;
     HandleEventsFunc* handleEventsPtr = (HandleEventsFunc*)((char*)setupPtr + sizeof(SetupFunc));
     UpdateFunc* updatePtr = (UpdateFunc*)((char*)handleEventsPtr + sizeof(HandleEventsFunc));

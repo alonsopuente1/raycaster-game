@@ -1,17 +1,13 @@
-#define LOGMSGS
-#include "logger.h"
-
 #include "m_game.h"
 
 #include "s_mainmenuscene.h"
 #include "s_gamescene.h"
 
+#include "logger.h"
 
 #ifdef linux
 #error linux support not implemented yet
 #endif
-
-#define SDL_main main
 
 maingame_t game = { 0 };
 
@@ -34,8 +30,6 @@ int main(int argc, char** argv)
         .draw = GS_Draw,
         .destroy = GS_DestroyScene
     };
-
-    printf("sizeof gscene: %i\nsizeof gamescene_t: %i\n", sizeof(gScene), sizeof(gamescene_t));
 
     if(!G_Init(&game))
         return -1;
