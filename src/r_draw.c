@@ -343,6 +343,8 @@ void R_RenderMinimap(gamescene_t* scene, maingame_t* game)
 
     if(SDL_RenderGeometry(window->sdlRenderer, minimapTex->data, vertices, numVertices, NULL, 0) < 0) 
         LogMsgf(ERROR, "SDL_RenderGeometry failed to render minimap. SDL_ERROR:%s\n", SDL_GetError());
+
+    free(vertices);
 }
 
 

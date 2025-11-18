@@ -1,6 +1,5 @@
 #include "m_game.h"
 
-#include <direct.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_mixer.h>
@@ -13,10 +12,8 @@
 #include "settings.h"
 #include "fonts.h"
 
-#ifdef _WIN32
+#if _WIN32 
 #include <Windows.h>
-#else
-#error "Unsupported platform"
 #endif
 
 /* ----   FORWARD DECLARATIONS      ---- */
