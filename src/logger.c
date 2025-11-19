@@ -107,7 +107,7 @@ void _LogMsg(errorLevel lvl, const char* msg, int line, const char* file, const 
         "[ERROR]\t\t"
     };
 
-    printf("%sAt %s:%i in function %s\n\t\t%s", errorlvlmsg[(int)lvl], file, line, function, msg);
+    printf("%sAt %s:%i in function %s\n\t\t%s\n", errorlvlmsg[(int)lvl], file, line, function, msg);
 
     return;
 }

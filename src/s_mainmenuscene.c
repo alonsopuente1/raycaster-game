@@ -4,6 +4,34 @@
 
 #include "logger.h"
 
+#include <Windows.h>
+
+// TODO: implement function and add list of maps on main menu screens
+char** GetAllFilesInDir(const char* dir, int* numFiles)
+{
+    char** output;
+    int filesFound = 0;
+
+    HANDLE hFile = NULL;
+    WIN32_FIND_DATA fFile = { 0 };
+    
+    hFile = FindFirstFileA(dir, &fFile);       
+    if(hFile == INVALID_HANDLE_VALUE)
+    {
+        LogMsgf(ERROR, "failed to search for files in directory '%s'\n", dir);
+        return NULL;
+    }
+    
+    do
+    {
+        LogMsgf(DEBUG, "File found: %s\n", fFile.cFileName);
+    } while (FindNextFileA(hFile, &fFile));
+
+    FindClose(hFile);
+
+    return output;
+}
+
 void MMS_SetupScene(void* scene, maingame_t* game)
 {
     if(!scene)
@@ -37,6 +65,9 @@ void MMS_SetupScene(void* scene, maingame_t* game)
     
     W_SetButtonText(&mmScene->startButton, "Play");
     W_SetButtonText(&mmScene->exitButton, "Quit");
+
+    int numFiles = 0;
+    GetAllFilesInDir("./res/maps/*.sdm", &numFiles);
 }
 
 void MMS_HandleEvents(void* scene, maingame_t* game, SDL_Event* event)
