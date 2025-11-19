@@ -26,7 +26,7 @@ int GetLastChar(const char* str, char chr)
 
     int lastIndex = -1;
 
-    for(int i = 0; i < strlen(str); i++)
+    for(int i = 0; i < (int)strlen(str); i++)
         if(str[i] == chr)
             lastIndex = i;
 
@@ -74,7 +74,7 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
     
     lastSlashIndex = lastBackslashIndex > lastForwardSlashIndex ? lastBackslashIndex : lastForwardSlashIndex;
 
-    if(lastSlashIndex + 1 > sizeof(tempPath) - 1)
+    if(lastSlashIndex + 1 > (int)sizeof(tempPath) - 1)
     {
         LogMsg(ERROR, "length of directory too long");
         return NULL;

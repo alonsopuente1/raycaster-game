@@ -224,7 +224,7 @@ void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e)
 
         if(!mapArgs.success)
         {
-            LogMsgf(ERROR, "failed to load map at file path '%s'\n", e->user.data1);
+            LogMsgf(ERROR, "failed to load map at file path '%s'\n", (char*)e->user.data1);
             free(e->user.data1);
             G_ChangeScene(game, "MainMenu");
             return;
