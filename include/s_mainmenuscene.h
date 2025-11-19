@@ -16,6 +16,9 @@ typedef struct mainMenuScene_s
 
     winButton_t         startButton;
     winButton_t         exitButton;
+
+    int                 numMapFiles;
+    char**              mapFiles;
 } mainMenuScene_t;
 #pragma pack(pop)
 
