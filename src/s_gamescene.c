@@ -9,6 +9,12 @@
 
 #include <Windows.h>
 
+/* FORWARD DECLARATIONS */
+
+void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e);
+
+/* PUBLIC FUNCTIONS*/
+
 void GS_SetupScene(void* scene, maingame_t* game)
 {
     gamescene_t* gScene = (gamescene_t*)scene;
@@ -97,29 +103,7 @@ void GS_HandleEvents(void* scene, maingame_t* game, SDL_Event* e)
 
     if(e->type == SDL_USEREVENT)
     {
-    switch(e->user.code)
-    {
-    case EVENT_LOADMAP:
-    {
-        maploadargs_t mapArgs = { 0 };
-        M_LoadMap(&gScene->map, &mapArgs, e->user.data1);
-
-        if(!mapArgs.success)
-        {
-            LogMsgf(ERROR, "failed to load map at file path '%s'\n", e->user.data1);
-            free(e->user.data1);
-            G_ChangeScene(game, "MainMenu");
-            return;
-        }
-
-        gScene->player.maxMoveSpeed = mapArgs.maxSpeed;
-        gScene->player.pos = mapArgs.startPos;
-        
-        break;
-    } // EVENT_LOADMAP
-
-    } // switch
-    
+        GS_HandleUserEvent(scene, game, e);
     } // if
     
     
@@ -167,7 +151,7 @@ void GS_Update(void* scene, maingame_t* game, float dt)
 {
     gamescene_t* gScene = (gamescene_t*)scene;
 
-    // game is not ready yet, no map yet
+    // game is not ready yet since there is no map yet
     if(!gScene->map.mapData)
         return;
 
@@ -221,4 +205,37 @@ void GS_DestroyScene(void* scene, maingame_t* game)
         Mix_FreeChunk(gScene->footstep2);
 
     M_Free(&gScene->map);
+}
+
+/* PRIVATE FUNCTIONS */
+void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e)
+{
+    if(!e || e->user.type != SDL_USEREVENT)
+        return;
+
+    gamescene_t* gScene = (gamescene_t*)scene;
+
+    switch(e->user.code)
+    {
+    case EVENT_LOADMAP:
+    {
+        maploadargs_t mapArgs = { 0 };
+        M_LoadMap(&gScene->map, &mapArgs, e->user.data1);
+
+        if(!mapArgs.success)
+        {
+            LogMsgf(ERROR, "failed to load map at file path '%s'\n", e->user.data1);
+            free(e->user.data1);
+            G_ChangeScene(game, "MainMenu");
+            return;
+        }
+
+        gScene->player.maxMoveSpeed = mapArgs.maxSpeed;
+        gScene->player.pos = mapArgs.startPos;
+        
+        break;
+    } // EVENT_LOADMAP
+
+    } // switch
+    
 }
