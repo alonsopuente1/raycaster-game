@@ -5,6 +5,12 @@
 
 #include "w_buttons.h"
 
+typedef enum menustate_e
+{
+    MAINMENU,
+    MAPCHOOSE
+} menustate_t;
+
 #pragma pack(push, 1)
 typedef struct mainMenuScene_s
 {
@@ -14,9 +20,18 @@ typedef struct mainMenuScene_s
     DrawFunc            draw; 
     DestroyFunc         destroy;
 
+    menustate_t         state;
+
+    // mainmenu elements
     winButton_t         startButton;
     winButton_t         exitButton;
 
+    // mapchoose elements
+    winButton_t*        mapFileButtons;
+
+    winButton_t         backButton;
+
+    // misc data
     int                 numMapFiles;
     char**              mapFiles;
 } mainMenuScene_t;

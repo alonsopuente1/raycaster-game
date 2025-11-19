@@ -4,7 +4,7 @@
 
 #include "settings.h"
 #include "w_window.h"
-
+#include "util.h"
 #include "logger.h"
 
 extern window_t gMainWindow;
@@ -13,24 +13,7 @@ texture_t* gTextures;
 
 extern int NUMTEXTURES;
 
-void fileNameFromPath(const char* path, char* outName, int maxLen)
-{
-    char* lastSlash = (char*)path;
-    char* lastDot = (char*)path;
-    for(char* p = (char*)path; *p != '\0'; p++)
-    {
-        if(*p == '/' || *p == '\\')
-            lastSlash = p + 1;
-        if(*p == '.')
-            lastDot = p;
-    }
 
-    int charsToCopy = lastDot - lastSlash;
-    if(charsToCopy >= maxLen)
-        charsToCopy = maxLen - 1;
-    memcpy(outName, lastSlash, charsToCopy);
-    outName[charsToCopy] = '\0';
-}
 
 texture_t T_LoadTexture(window_t* window, const char* path)
 {

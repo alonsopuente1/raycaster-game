@@ -14,6 +14,9 @@ extern int GetLastChar(const char* str, char chr);
 // gets all the files in the dir matching the wildcard
 // for example 'images/*.png' will return an array
 // ["images/background.png", "images/brickwall.png", "images/grass.png"]
+// returns NULL on error
 extern char** GetAllFilesInDir(const char* dir, int* numFiles);
+
+extern void fileNameFromPath(const char* path, char* outName, int maxLen);
 
 #endif

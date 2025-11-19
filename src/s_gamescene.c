@@ -1,6 +1,6 @@
 #include "s_gamescene.h"
 
-
+#include "s_gameevents.h"
 #include "r_draw.h"
 #include "p_funcs.h"
 #include "v_funcs.h"
@@ -58,18 +58,6 @@ void GS_SetupScene(void* scene, maingame_t* game)
         return;
     }
 
-    /* MAP LOADING */
-
-    maploadargs_t mapArgs = { 0 };
-
-    M_LoadMap(&gScene->map, &mapArgs, "res/maps/map1.sdm");
-    if(!mapArgs.success)
-    {
-        MessageBoxA(NULL, "Failed to load map!", "Error!", MB_ICONERROR | MB_OK);
-        G_ChangeScene(game, "MainMenu");
-        return;
-    }
-
     /* AUDIO LOADING */
 
     gScene->footstep1 = Mix_LoadWAV("res/sound/footsteps/1.wav");
@@ -93,10 +81,6 @@ void GS_SetupScene(void* scene, maingame_t* game)
         G_ChangeScene(game, "MainMenu");
         return;
     }
-
-    /* PLAYER INITIALISING */
-    gScene->player.pos = mapArgs.startPos;
-    gScene->player.maxMoveSpeed = mapArgs.maxSpeed;
 }
 
 void GS_HandleEvents(void* scene, maingame_t* game, SDL_Event* e)
@@ -111,6 +95,34 @@ void GS_HandleEvents(void* scene, maingame_t* game, SDL_Event* e)
     if(e->type == SDL_MOUSEMOTION)
         P_Rotate(player, (float)(e->motion.xrel) / 100);
 
+    if(e->type == SDL_USEREVENT)
+    {
+    switch(e->user.code)
+    {
+    case EVENT_LOADMAP:
+    {
+        maploadargs_t mapArgs = { 0 };
+        M_LoadMap(&gScene->map, &mapArgs, e->user.data1);
+
+        if(!mapArgs.success)
+        {
+            LogMsgf(ERROR, "failed to load map at file path '%s'\n", e->user.data1);
+            free(e->user.data1);
+            G_ChangeScene(game, "MainMenu");
+            return;
+        }
+
+        gScene->player.maxMoveSpeed = mapArgs.maxSpeed;
+        gScene->player.pos = mapArgs.startPos;
+        
+        break;
+    } // EVENT_LOADMAP
+
+    } // switch
+    
+    } // if
+    
+    
     // will never return null since sdl is initialised
     const Uint8* keys = SDL_GetKeyboardState(NULL);
     
@@ -155,6 +167,10 @@ void GS_Update(void* scene, maingame_t* game, float dt)
 {
     gamescene_t* gScene = (gamescene_t*)scene;
 
+    // game is not ready yet, no map yet
+    if(!gScene->map.mapData)
+        return;
+
     P_HandleState(&gScene->player, &gScene->map, dt);
 
     if(SDL_GetWindowFlags(game->window.sdlWindow) & SDL_WINDOW_INPUT_FOCUS)
@@ -178,6 +194,9 @@ void GS_Draw(void* scene, maingame_t* game)
 {
     gamescene_t* gScene = (gamescene_t*)scene;
     SDL_Renderer* render = game->window.sdlRenderer;
+
+    if(!gScene->map.mapData)
+        return;
 
     SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
     SDL_RenderClear(render);

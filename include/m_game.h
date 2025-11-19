@@ -51,6 +51,11 @@ extern bool G_AddScene(maingame_t* game, void* scene, unsigned int size, const c
 
 // scene should be created beforehand using S_CreateScene()
 extern void G_AddSceneExisting(maingame_t* game, scene_t* scene);
+// destroys the scene currently loaded and creates the new scene
+// by name. 
+// IF THIS FUNCTION IS USED INSIDE OF ANYWHERE OF ANOTHER SCENE'S LOGIC,
+// USING ANY DATA MEMBERS BELONGING TO THAT SCENE WILL RESULT IN A
+// SEG FAULT
 extern void G_ChangeScene(maingame_t* game, const char* sceneName);
 extern void G_Run(maingame_t* game);
 extern void G_Destroy(maingame_t* game);

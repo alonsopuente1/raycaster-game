@@ -3,6 +3,7 @@
 #include "m_game.h"
 #include "util.h"
 #include "logger.h"
+#include "s_gameevents.h"
 
 #include <Windows.h>
 
@@ -40,8 +41,26 @@ void MMS_SetupScene(void* scene, maingame_t* game)
     W_SetButtonText(&mmScene->startButton, "Play");
     W_SetButtonText(&mmScene->exitButton, "Quit");
 
-    int numFiles = 0;
-    char** mapFiles = GetAllFilesInDir("./res/maps/*.sdm", &numFiles);
+    mmScene->mapFiles = GetAllFilesInDir("./res/maps/*.sdm", &mmScene->numMapFiles);
+    mmScene->mapFileButtons = calloc(mmScene->numMapFiles, sizeof(winButton_t));
+
+    int backButtonWidth = 100;
+    int backButtonHeight = 100;
+
+    mmScene->backButton = W_CreateButton(game, (SDL_Rect){backButtonWidth, game->window.height - backButtonHeight, backButtonWidth, backButtonHeight}, (SDL_Color){0, 0, 0, 100});
+    W_SetButtonText(&mmScene->backButton, "Back");
+
+
+    SDL_Rect rect = { 0 };
+    for(int i = 0; i < mmScene->numMapFiles; i++)
+    {
+        char fileName[32] = { 0 };
+
+        fileNameFromPath(mmScene->mapFiles[i], fileName, sizeof(fileName));
+
+        mmScene->mapFileButtons[i] = W_CreateButton(game, rect, (SDL_Color){0, 0, 0, 100});
+        W_SetButtonText(&mmScene->mapFileButtons[i], fileName);
+    }
 }
 
 void MMS_HandleEvents(void* scene, maingame_t* game, SDL_Event* event)
@@ -68,27 +87,84 @@ void MMS_HandleEvents(void* scene, maingame_t* game, SDL_Event* event)
 
     if(event->type == SDL_MOUSEBUTTONDOWN)
     {
-        int mouseX, mouseY;
-        SDL_GetMouseState(&mouseX, &mouseY);
-        SDL_Point mousePos = (SDL_Point){mouseX, mouseY};
+        switch(mmScene->state)
+        {
+        case MAINMENU:
+        {
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            SDL_Point mousePos = (SDL_Point){mouseX, mouseY};
 
-        if(SDL_PointInRect(&mousePos, &mmScene->startButton.rect))
-        {
-            LogMsg(INFO, "Start button clicked\n");
-            G_ChangeScene(game, "Game");
-            return;
+            if(SDL_PointInRect(&mousePos, &mmScene->startButton.rect))
+            {
+                LogMsg(INFO, "Start button clicked\n");
+                mmScene->state = MAPCHOOSE;
+                return;
+            }
+            else if(SDL_PointInRect(&mousePos, &mmScene->exitButton.rect))
+            {
+                LogMsg(INFO, "Exit button clicked\n");
+                game->running = false;
+            }
+            break;
         }
-        else if(SDL_PointInRect(&mousePos, &mmScene->exitButton.rect))
+        case MAPCHOOSE:
         {
-            LogMsg(INFO, "Exit button clicked\n");
-            game->running = false;
+            int mouseX, mouseY;
+            SDL_GetMouseState(&mouseX, &mouseY);
+            SDL_Point mousePos = (SDL_Point){mouseX, mouseY};
+
+            if(SDL_PointInRect(&mousePos, &mmScene->backButton.rect))
+            {
+                mmScene->state = MAINMENU;
+            }
+
+            for(int i = 0; i < mmScene->numMapFiles; i++)
+            {
+                if(SDL_PointInRect(&mousePos, &mmScene->mapFileButtons[i].rect))
+                {
+                    LogMsgf(INFO, "loading map at file path '%s'\n", mmScene->mapFiles[i]);
+                    SDL_Event event = { 0 };
+                    event.type = SDL_USEREVENT;
+                    event.user.code = EVENT_LOADMAP;
+                    event.user.data1 = calloc(strlen(mmScene->mapFiles[i]) + 1, sizeof(char));
+                    if(!event.user.data1)
+                    {
+                        LogMsg(ERROR, "failed to allocate memory for loading map\n");
+                        break;
+                    }
+                    memcpy(event.user.data1, mmScene->mapFiles[i], strlen(mmScene->mapFiles[i]));
+                    if(SDL_PushEvent(&event) <= 0)
+                    {
+                        LogMsg(ERROR, "failed to push load map event to event queue\n");
+                        free(event.user.data1);
+                        break;
+                    }
+                    G_ChangeScene(game, "Game");
+                    return;
+                }
+            }
         }
+        }
+        
     }
 }
 
 void MMS_Update(void* scene, maingame_t* game, float dt)
 {
+    mainMenuScene_t* mmScene = (mainMenuScene_t*)scene;
 
+    int iterations = mmScene->numMapFiles > 10 ? 10 : mmScene->numMapFiles;
+
+    int rectWidth = game->window.width / 5;
+    int rectHeight = game->window.height / 20;
+
+    for(int i = 0; i < iterations; i++)
+    {
+        SDL_Rect rect = {game->window.width / 2 - rectWidth / 2, rectHeight * (5 + i), rectWidth, rectHeight};
+
+        W_SetButtonRect(&mmScene->mapFileButtons[i], rect);
+    }
 }
 
 void MMS_Draw(void* scene, maingame_t* game)
@@ -111,11 +187,26 @@ void MMS_Draw(void* scene, maingame_t* game)
     SDL_SetRenderDrawColor(render, 50, 50, 50, 255);
     SDL_RenderClear(render);
 
-    W_DrawButton(&mmScene->startButton);
-    W_DrawButton(&mmScene->exitButton);
-
+    switch(mmScene->state)
+    {
+    case MAINMENU:
+    {
+        W_DrawButton(&mmScene->startButton);
+        W_DrawButton(&mmScene->exitButton);
+        break;
+    }
+    case MAPCHOOSE:
+    {
+        int iterations = mmScene->numMapFiles > 10 ? 10 : mmScene->numMapFiles;
+        for(int i = 0; i < iterations; i++)
+        {
+            W_DrawButton(&mmScene->mapFileButtons[i]);
+        }
+        W_DrawButton(&mmScene->backButton);
+    }
+    }
+    
     SDL_RenderPresent(render);
-
 }
 
 void MMS_Destroy(void* scene, maingame_t* game)
@@ -137,5 +228,14 @@ void MMS_Destroy(void* scene, maingame_t* game)
     W_DestroyButton(&mmScene->startButton);
     W_DestroyButton(&mmScene->exitButton);
 
-    FreeDynamicArrayOfAllocatedElements(mmScene->mapFiles, mmScene->numMapFiles);
+    FreeDynamicArrayOfAllocatedElements((void**)mmScene->mapFiles, mmScene->numMapFiles);
+    mmScene->mapFiles = NULL;
+
+    if(mmScene->mapFileButtons)
+    {
+        free(mmScene->mapFileButtons);
+        mmScene->mapFileButtons = NULL;
+    }
+
+    TB_FreeAllTextures(&game->texturebank);
 }

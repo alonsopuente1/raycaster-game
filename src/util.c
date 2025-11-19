@@ -24,11 +24,13 @@ int GetLastChar(const char* str, char chr)
         return -1;
     }
 
+    int lastIndex = -1;
+
     for(int i = 0; i < strlen(str); i++)
         if(str[i] == chr)
-            return i;
+            lastIndex = i;
 
-    return -1;
+    return lastIndex;
 }
 
 
@@ -122,4 +124,23 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
 
     *numFiles = filesFound;
     return output;
+}
+
+void fileNameFromPath(const char* path, char* outName, int maxLen)
+{
+    char* lastSlash = (char*)path;
+    char* lastDot = (char*)path;
+    for(char* p = (char*)path; *p != '\0'; p++)
+    {
+        if(*p == '/' || *p == '\\')
+            lastSlash = p + 1;
+        if(*p == '.')
+            lastDot = p;
+    }
+
+    int charsToCopy = lastDot - lastSlash;
+    if(charsToCopy >= maxLen)
+        charsToCopy = maxLen - 1;
+    memcpy(outName, lastSlash, charsToCopy);
+    outName[charsToCopy] = '\0';
 }
