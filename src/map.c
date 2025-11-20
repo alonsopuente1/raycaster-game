@@ -104,7 +104,9 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             continue;
         }
 
-        // player data
+        /* PLAYER DATA */
+
+        // player start var
         if(strcmp(token, "playerstart") == 0)
         {
             float x = atof(strtok(NULL, " \t\n\r")) , y = atof(strtok(NULL, " \t\n\r"));
@@ -118,6 +120,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             mapArgs->startPos = V_Make(x, y);
         }
 
+        // player max speed var
         if(strcmp(token, "playermaxspeed") == 0)
         {
             float maxSpeed = atof(strtok(NULL, " \t\n\r"));
@@ -132,6 +135,18 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             continue;
         }
 
+        // player rotate speed var
+        if(strcmp(token, "playerrotatespeed") == 0)
+        {
+            float rotateSpeed = atof(strtok(NULL, " \t\n\r"));
+            if(rotateSpeed == 0.0f)
+                LogMsg(WARN, "playerrotatespeed not set, defaulting to 0.1...\n");
+
+            mapArgs->rotateSpeed = rotateSpeed;
+            continue;
+        }
+
+        /* FILE END TAG*/
         if(strcmp(token, "fileend") == 0)
         {
             LogMsgf(DEBUG, "Reached end of map data in map file %s\n", filePath);
@@ -141,6 +156,9 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
 
     fclose(file);
     mapArgs->success = true;
+
+    if(mapArgs->rotateSpeed == 0.0f)
+        mapArgs->rotateSpeed = 0.0035f;
 
     #undef CLEANUP
 

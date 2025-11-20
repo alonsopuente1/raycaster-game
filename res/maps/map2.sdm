@@ -5,6 +5,7 @@ mapdim 24 24
 
 playerstart 4 4
 playermaxspeed 0.005
+playerrotatespeed 0.0035
 
 mapstart
 111111111111111111111111

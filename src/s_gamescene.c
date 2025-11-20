@@ -102,9 +102,7 @@ void GS_HandleEvents(void* scene, maingame_t* game, SDL_Event* e)
         P_Rotate(player, (float)(e->motion.xrel) / 100);
 
     if(e->type == SDL_USEREVENT)
-    {
         GS_HandleUserEvent(scene, game, e);
-    } // if
     
     
     // will never return null since sdl is initialised
@@ -223,7 +221,7 @@ void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e)
         M_LoadMap(&gScene->map, &mapArgs, e->user.data1);
         if(e->user.data1)
             free(e->user.data1);
-
+        
         if(!mapArgs.success)
         {
             LogMsgf(ERROR, "failed to load map at file path '%s'\n", (char*)e->user.data1);
@@ -233,6 +231,7 @@ void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e)
 
         gScene->player.maxMoveSpeed = mapArgs.maxSpeed;
         gScene->player.pos = mapArgs.startPos;
+        gScene->player.rotateSpeed = mapArgs.rotateSpeed;
         
         break;
     } // EVENT_LOADMAP

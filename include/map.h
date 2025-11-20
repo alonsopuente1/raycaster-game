@@ -11,6 +11,7 @@ typedef struct maploadargs_s
     vertex2d_t  startPos;
 
     float       maxSpeed;
+    float       rotateSpeed;
 
     // true when map loaded successfully
     bool        success;
