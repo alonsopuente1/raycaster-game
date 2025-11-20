@@ -85,6 +85,26 @@ void MMS_HandleEvents(void* scene, maingame_t* game, SDL_Event* event)
 
     mainMenuScene_t* mmScene = (mainMenuScene_t*)scene;
 
+    if(event->type == SDL_KEYDOWN)
+    {
+        if(event->key.keysym.scancode == SDL_SCANCODE_ESCAPE && !event->key.repeat)
+        {
+            switch(mmScene->state)
+            {
+                case MAINMENU:
+                {
+                    game->running = false;
+                    break;
+                }
+                case MAPCHOOSE:
+                {
+                    mmScene->state = MAINMENU;
+                    break;
+                }
+            }
+        }
+    }
+
     if(event->type == SDL_MOUSEBUTTONDOWN)
     {
         switch(mmScene->state)
