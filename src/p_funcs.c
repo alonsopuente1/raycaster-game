@@ -46,9 +46,11 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     if(p->moveState & ROTATE_LEFT) // Player rotating left
         P_Rotate(p, -p->rotateSpeed * dt);
 
+    V_SetMagnitude(&newAcc, 0.0005f);
+
     if(!V_GetMagnitude(newAcc))
     {
-        newAcc = V_Mul(p->vel, -0.1f); // apply friction
+        newAcc = V_Mul(p->vel, -0.05f); // apply friction
     }
     
     p->vel = V_Add(p->vel, newAcc);
