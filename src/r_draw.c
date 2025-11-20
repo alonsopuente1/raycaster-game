@@ -298,9 +298,12 @@ texture_t* R_UpdateMinimap(gamescene_t* scene, maingame_t* game)
                 LogMsg(ERROR, "failed to render map cell on minimap texture\n");
         }
     }
-    SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_NONE);
 
+    SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_NONE);
+    
+    SDL_Rect playerRect = (SDL_Rect){minimapTex->width / 2 - 2, minimapTex->height / 2 - 2, 4, 4};
     SDL_SetRenderDrawColor(window->sdlRenderer, 0, 255, 0, 255);
+    SDL_RenderDrawRect(window->sdlRenderer, &playerRect);
 
     SDL_SetRenderTarget(window->sdlRenderer, NULL);
 
