@@ -31,6 +31,31 @@ renderer_t R_CreateRenderer(window_t* parentWindow)
     return output;
 }
 
+void R_ClearScreen(renderer_t* render, SDL_Color colour)
+{
+    if(!render)
+    {
+        LogMsg(WARN, "passed null ptr to renderer\n");
+        return;
+    }
+
+    SDL_Renderer* sdlRenderer = render->parentWindow->sdlRenderer;
+
+    SDL_SetRenderDrawColor(sdlRenderer, colour.r, colour.g, colour.b, colour.a);
+    SDL_RenderClear(sdlRenderer);
+}
+
+void R_Present(renderer_t* render)
+{
+    if(!render)
+    {
+        LogMsg(WARN, "passed null ptr to renderer\n");
+        return;
+    }
+
+    SDL_RenderPresent(render->parentWindow->sdlRenderer);
+}
+
 void R_DestroyRenderer(renderer_t* render)
 {
     if(!render)

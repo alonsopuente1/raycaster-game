@@ -210,10 +210,9 @@ void MMS_Draw(void* scene, maingame_t* game)
 
     mainMenuScene_t* mmScene = (mainMenuScene_t*)scene;
 
-    SDL_Renderer* render = game->window.sdlRenderer;
+    renderer_t* render = &mmScene->render;
 
-    SDL_SetRenderDrawColor(render, 50, 50, 50, 255);
-    SDL_RenderClear(render);
+    R_ClearScreen(render, (SDL_Color){50, 50, 50, 255});
 
     switch(mmScene->state)
     {
@@ -234,7 +233,7 @@ void MMS_Draw(void* scene, maingame_t* game)
     }
     }
     
-    SDL_RenderPresent(render);
+    R_Present(render);
 }
 
 void MMS_Destroy(void* scene, maingame_t* game)

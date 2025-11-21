@@ -186,20 +186,19 @@ void GS_Update(void* scene, maingame_t* game, float dt)
 void GS_Draw(void* scene, maingame_t* game)
 {
     gamescene_t* gScene = (gamescene_t*)scene;
-    SDL_Renderer* render = game->window.sdlRenderer;
+    renderer_t* render = &gScene->renderer;
 
     if(!gScene->map.mapData)
         return;
 
-    SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
-    SDL_RenderClear(render);
+    R_ClearScreen(render, (SDL_Color){0, 0, 0, 255});
 
-    R_RenderCeilingAndFloor(&gScene->renderer, (SDL_Color){40, 40, 40, 255}, (SDL_Color){60, 60, 60, 255});
-    R_RenderPlayerView(&gScene->renderer, &gScene->player, &gScene->map);
-    R_RenderPlayerGun(&gScene->renderer, &gScene->player);
-    R_RenderMinimap(&gScene->renderer, &gScene->player, &gScene->map);
-
-    SDL_RenderPresent(render);
+    R_RenderCeilingAndFloor(render, (SDL_Color){40, 40, 40, 255}, (SDL_Color){60, 60, 60, 255});
+    R_RenderPlayerView(render, &gScene->player, &gScene->map);
+    R_RenderPlayerGun(render, &gScene->player);
+    R_RenderMinimap(render, &gScene->player, &gScene->map);
+    
+    R_Present(render);
 }
 
 void GS_DestroyScene(void* scene, maingame_t* game)

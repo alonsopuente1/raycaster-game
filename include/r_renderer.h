@@ -17,6 +17,10 @@ typedef struct renderer_s
 } renderer_t;
 
 extern renderer_t R_CreateRenderer(window_t* parentWindow);
+
+extern void R_ClearScreen(renderer_t* render, SDL_Color colour);
+extern void R_Present(renderer_t* render);
+
 extern void R_DestroyRenderer(renderer_t* render);
 
 #endif
