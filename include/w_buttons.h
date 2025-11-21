@@ -3,8 +3,9 @@
 
 #include <SDL2/SDL.h>
 
-typedef struct maingame_s maingame_t;
+typedef struct renderer_s renderer_t;
 typedef struct texture_s texture_t;
+
 typedef struct winButton_s
 {
 
@@ -13,11 +14,11 @@ typedef struct winButton_s
 
     texture_t*  text;
 
-    maingame_t* parentGame;
+    renderer_t* parentRenderer;
 
 } winButton_t;
 
-extern winButton_t W_CreateButton(maingame_t* game, SDL_Rect rect, SDL_Color backgroundColour);
+extern winButton_t W_CreateButton(renderer_t* render, SDL_Rect rect, SDL_Color backgroundColour);
 extern void W_SetButtonText(winButton_t* button, const char* src);
 extern void W_SetButtonRect(winButton_t* button, SDL_Rect src);
 // since button already has parent window, it can draw

@@ -4,10 +4,13 @@
 #include "r_draw.h"
 #include "p_funcs.h"
 #include "v_funcs.h"
+#include "m_game.h"
+#include "w_window.h"
 
 #include "logger.h"
 
 #include <Windows.h>
+#include <SDL2/SDL.h>
 
 /* FORWARD DECLARATIONS */
 
@@ -38,17 +41,25 @@ void GS_SetupScene(void* scene, maingame_t* game)
         "res/textures/guns/FIST.png"
     };
 
+    gScene->renderer = R_CreateRenderer(&game->window);
+    if(!gScene->renderer.parentWindow)
+    {
+        LogMsg(ERROR, "failed to create renderer for game scene");
+        G_ChangeScene(game, "MainMenu");
+        return;
+    }
+
     int NUMTEXTURES = ((int)(sizeof(texturePaths) / sizeof(texturePaths[0])));
 
     for(int i = 0; i < NUMTEXTURES; i++)
     {
-        if(!TB_PushTexture(&game->window, &game->texturebank, texturePaths[i]))
+        if(!TB_PushTexture(gScene->renderer.parentWindow, &gScene->renderer.textureBank, texturePaths[i]))
         {
             LogMsgf(ERROR, "failed to load texture at file path '%s'\n", texturePaths[i]);
         }
     }    
 
-    texture_t* texture = TB_AddEmptyTexture(&game->texturebank);
+    texture_t* texture = TB_AddEmptyTexture(&gScene->renderer.textureBank);
     if(!texture)
     {
         MessageBoxA(NULL, "Failed to add empty texture for minimap!", "Error!", MB_ICONERROR | MB_OK);
@@ -56,7 +67,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
         return;
     }
 
-    *texture = T_CreateBlankTexture(&game->window, "MINIMAP", 256, 256);
+    *texture = T_CreateBlankTexture(gScene->renderer.parentWindow, "MINIMAP", 256, 256);
     if(!texture->data)
     {
         MessageBoxA(NULL, "Failed to add empty texture for minimap!", "Error!", MB_ICONERROR | MB_OK);
@@ -183,10 +194,10 @@ void GS_Draw(void* scene, maingame_t* game)
     SDL_SetRenderDrawColor(render, 0, 0, 0, 255);
     SDL_RenderClear(render);
 
-    R_RenderCeilingAndFloor(game);
-    R_RenderPlayerView(gScene, game);
-    R_RenderPlayerGun(gScene, game);
-    R_RenderMinimap(gScene, game);
+    R_RenderCeilingAndFloor(&gScene->renderer, (SDL_Color){40, 40, 40, 255}, (SDL_Color){60, 60, 60, 255});
+    R_RenderPlayerView(&gScene->renderer, &gScene->player, &gScene->map);
+    R_RenderPlayerGun(&gScene->renderer, &gScene->player);
+    R_RenderMinimap(&gScene->renderer, &gScene->player, &gScene->map);
 
     SDL_RenderPresent(render);
 }
@@ -195,8 +206,8 @@ void GS_DestroyScene(void* scene, maingame_t* game)
 {
     gamescene_t* gScene = (gamescene_t*)scene;
 
-    TB_FreeAllTextures(&game->texturebank);
-    
+    R_DestroyRenderer(&gScene->renderer);
+
     if(gScene->footstep1)
         Mix_FreeChunk(gScene->footstep1);
     if(gScene->footstep2)

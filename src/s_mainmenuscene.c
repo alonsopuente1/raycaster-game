@@ -20,10 +20,18 @@ void MMS_SetupScene(void* scene, maingame_t* game)
         LogMsg(ERROR, "passed null ptr to game, something is very wrong\n");
         return;
     }
+    memset(scene, 0, sizeof(mainMenuScene_t));
 
     mainMenuScene_t* mmScene = (mainMenuScene_t*)scene;
 
-    memset(scene, 0, sizeof(mainMenuScene_t));
+    mmScene->render = R_CreateRenderer(&game->window);
+    if(!mmScene->render.parentWindow)
+    {
+        LogMsg(ERROR, "failed to create renderer for main menu\n");
+        game->running = false;
+        return;
+    }
+    
 
     int rectHeight = game->window.height / 6;
     int rectWidth = game->window.width / 2;
@@ -35,8 +43,8 @@ void MMS_SetupScene(void* scene, maingame_t* game)
         (SDL_Rect){ game->window.width / 2 - rectWidth / 2, game->window.height / 2 + 10, rectWidth, rectHeight}
     };
     
-    mmScene->startButton = W_CreateButton(game, buttons[0], (SDL_Color){0, 0, 0, 100});
-    mmScene->exitButton = W_CreateButton(game, buttons[1], (SDL_Color){0, 0, 0, 100});
+    mmScene->startButton = W_CreateButton(&mmScene->render, buttons[0], (SDL_Color){0, 0, 0, 100});
+    mmScene->exitButton = W_CreateButton(&mmScene->render, buttons[1], (SDL_Color){0, 0, 0, 100});
     
     W_SetButtonText(&mmScene->startButton, "Play");
     W_SetButtonText(&mmScene->exitButton, "Quit");
@@ -47,7 +55,7 @@ void MMS_SetupScene(void* scene, maingame_t* game)
     int backButtonWidth = 100;
     int backButtonHeight = 100;
 
-    mmScene->backButton = W_CreateButton(game, (SDL_Rect){backButtonWidth, game->window.height - backButtonHeight, backButtonWidth, backButtonHeight}, (SDL_Color){0, 0, 0, 100});
+    mmScene->backButton = W_CreateButton(&mmScene->render, (SDL_Rect){backButtonWidth, game->window.height - backButtonHeight, backButtonWidth, backButtonHeight}, (SDL_Color){0, 0, 0, 100});
     W_SetButtonText(&mmScene->backButton, "Back");
 
 
@@ -58,7 +66,7 @@ void MMS_SetupScene(void* scene, maingame_t* game)
 
         fileNameFromPath(mmScene->mapFiles[i], fileName, sizeof(fileName));
 
-        mmScene->mapFileButtons[i] = W_CreateButton(game, rect, (SDL_Color){0, 0, 0, 100});
+        mmScene->mapFileButtons[i] = W_CreateButton(&mmScene->render, rect, (SDL_Color){0, 0, 0, 100});
         W_SetButtonText(&mmScene->mapFileButtons[i], fileName);
     }
 }
@@ -257,5 +265,5 @@ void MMS_Destroy(void* scene, maingame_t* game)
         mmScene->mapFileButtons = NULL;
     }
 
-    TB_FreeAllTextures(&game->texturebank);
+    R_DestroyRenderer(&mmScene->render);
 }

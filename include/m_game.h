@@ -34,8 +34,7 @@ typedef struct maingame_s
     scene_t*        currentScene;
     scene_t*        scenes;
     int             numScenes;
-
-    texturebank_t   texturebank;
+    
 } maingame_t;
 
 

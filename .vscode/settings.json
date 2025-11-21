@@ -16,6 +16,9 @@
         "logger.h": "c",
         "s_scene.h": "c",
         "s_gamescene.h": "c",
-        "s_mainmenuscene.h": "c"
+        "s_mainmenuscene.h": "c",
+        "r_renderer.h": "c",
+        "settings.h": "c",
+        "w_buttons.h": "c"
     }
 }

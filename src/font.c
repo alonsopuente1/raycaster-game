@@ -1,5 +1,8 @@
 #include "fonts.h"
 
+#include "texture.h"
+#include "r_renderer.h"
+
 #include "logger.h"
 
 // array of all fonts to load
@@ -23,15 +26,26 @@ void FontInit()
     }
 }
 
-texture_t* F_CreateText(maingame_t* dst, SDL_Color colour, TTF_Font* font, const char* text)
+texture_t* F_CreateText(renderer_t* renderer, SDL_Color colour, TTF_Font* font, const char* text)
 {
-    if(!dst)
+    if(!renderer)
     {
-        LogMsg(WARN, "passed null ptr to game\n");
+        LogMsg(WARN, "passed null ptr to renderer\n");
         return NULL;
     }
 
-    texture_t*  output = TB_AddEmptyTexture(&dst->texturebank);
+    if(!font)
+    {
+        LogMsg(ERROR, "passed null ptr to font\n");
+        return NULL;
+    }
+    if(!text || strlen(text) <= 0)
+    {
+        LogMsg(ERROR, "passed null ptr or string of length 0\n");
+        return NULL;
+    }
+
+    texture_t*  output = TB_AddEmptyTexture(&renderer->textureBank);
 
     if(!output)
     {
@@ -44,16 +58,16 @@ texture_t* F_CreateText(maingame_t* dst, SDL_Color colour, TTF_Font* font, const
     if(!surface)
     {
         LogMsgf(ERROR, "failed to render text to surface. TTF_ERROR: %s\n", TTF_GetError());
-        if(TB_RemoveTextureByPtr(&dst->texturebank, output))
+        if(TB_RemoveTextureByPtr(&renderer->textureBank, output))
             LogMsg(ERROR, "MEMORY LEAK failed to remove texture from the texturebank\n");
         return NULL;
     }
 
-    texture = SDL_CreateTextureFromSurface(dst->window.sdlRenderer, surface);
+    texture = SDL_CreateTextureFromSurface(renderer->parentWindow->sdlRenderer, surface);
     if(!texture)
     {
         LogMsgf(ERROR, "failed to create texture from surface. SDL_ERROR: %s\n", SDL_GetError());
-        if(TB_RemoveTextureByPtr(&dst->texturebank, output))
+        if(TB_RemoveTextureByPtr(&renderer->textureBank, output))
             LogMsg(ERROR, "MEMORY LEAK failed to remove texture from the texturebank\n");
         SDL_FreeSurface(surface);
         return NULL;

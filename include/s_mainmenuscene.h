@@ -2,8 +2,8 @@
 #define __S_MAINMENUSCENE_H__
 
 #include "s_scene.h"
-
 #include "w_buttons.h"
+#include "r_renderer.h"
 
 typedef enum menustate_e
 {
@@ -19,6 +19,8 @@ typedef struct mainMenuScene_s
     UpdateFunc          update;
     DrawFunc            draw; 
     DestroyFunc         destroy;
+
+    renderer_t          render;
 
     menustate_t         state;
 

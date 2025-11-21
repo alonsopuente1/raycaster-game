@@ -3,20 +3,21 @@
 #include "logger.h"
 #include "fonts.h"
 #include "m_game.h"
+#include "r_renderer.h"
 
-winButton_t W_CreateButton(maingame_t* game, SDL_Rect rect, SDL_Color colour)
+winButton_t W_CreateButton(renderer_t* render, SDL_Rect rect, SDL_Color colour)
 {
     winButton_t output = { 0 };
-    if(!game)
+    if(!render)
     {
-        LogMsg(WARN, "passed null ptr to game\n");
+        LogMsg(WARN, "passed null ptr to renderer\n");
         return output;
     }
 
     output.rect = rect;
     output.backgroundColor = colour;
 
-    output.parentGame = game;
+    output.parentRenderer = render;
 
     return output;
 }
@@ -29,21 +30,21 @@ void W_SetButtonText(winButton_t* button, const char* src)
         return;
     }
 
-    if(!button->parentGame)
+    if(!button->parentRenderer)
     {
-        LogMsg(WARN, "trying to set button text without parent game set\n");
+        LogMsg(WARN, "trying to set button text without parent renderer set\n");
     }
 
     SDL_Color white = (SDL_Color){0xff, 0xff, 0xff, 0xff};
 
     if(button->text)
-        if(!TB_RemoveTextureByPtr(&button->parentGame->texturebank, button->text))
+        if(!TB_RemoveTextureByPtr(&button->parentRenderer->textureBank, button->text))
         {
             LogMsg(ERROR, "MEMORY LEAK failed to free old text\n");
             return;
         }
 
-    button->text = F_CreateText(button->parentGame, white, fonts[0], src);
+    button->text = F_CreateText(button->parentRenderer, white, fonts[0], src);
 
 
     if(!button->text)
@@ -72,20 +73,22 @@ void W_DrawButton(winButton_t* button)
         return;
     }
 
-    SDL_SetRenderDrawBlendMode(button->parentGame->window.sdlRenderer, SDL_BLENDMODE_BLEND);
+    SDL_Renderer*   dstSdlRenderer = button->parentRenderer->parentWindow->sdlRenderer;
 
-    SDL_SetRenderDrawColor(button->parentGame->window.sdlRenderer, 
+    SDL_SetRenderDrawBlendMode(dstSdlRenderer, SDL_BLENDMODE_BLEND);
+
+    SDL_SetRenderDrawColor(dstSdlRenderer, 
         button->backgroundColor.r,
         button->backgroundColor.g,
         button->backgroundColor.b,
         button->backgroundColor.a
     );
 
-    SDL_RenderFillRect(button->parentGame->window.sdlRenderer, &button->rect);
+    SDL_RenderFillRect(dstSdlRenderer, &button->rect);
     if(button->text)
-        if(SDL_RenderCopy(button->parentGame->window.sdlRenderer, button->text->data, NULL, &button->rect) < 0)
+        if(SDL_RenderCopy(dstSdlRenderer, button->text->data, NULL, &button->rect) < 0)
             LogMsgf(WARN, "failed to render text to button. SDL_ERROR: %s\n", SDL_GetError());
-    SDL_SetRenderDrawBlendMode(button->parentGame->window.sdlRenderer, SDL_BLENDMODE_NONE);
+    SDL_SetRenderDrawBlendMode(dstSdlRenderer, SDL_BLENDMODE_NONE);
 }
 
 
@@ -98,11 +101,11 @@ void W_DestroyButton(winButton_t* button)
     }
 
     if(button->text)
-        if(!TB_RemoveTextureByPtr(&button->parentGame->texturebank, button->text))
+        if(!TB_RemoveTextureByPtr(&button->parentRenderer->textureBank, button->text))
             LogMsg(ERROR, "MEMORY LEAK failed to free button text texture\n");
 
     button->backgroundColor = (SDL_Color){0,0,0,0};
-    button->parentGame = NULL;
+    button->parentRenderer = NULL;
     button->rect = (SDL_Rect){0,0,0,0};
     button->text = NULL;
 }

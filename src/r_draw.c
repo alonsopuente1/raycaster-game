@@ -7,29 +7,37 @@
 
 #include "v_funcs.h"
 #include "p_player.h"
-#include "settings.h"
-#include "m_game.h"
+#include "map.h"
 
 #include "logger.h"
 
-void R_RenderPlayerView(gamescene_t* scene, maingame_t* game)
+void R_RenderPlayerView(renderer_t* render, player_t* player, map_t* map)
 {
-    if(!game)
+    if(!render)
     {
-        LogMsg(WARN, "passed null ptr to game\n");
+        LogMsg(WARN, "passed null ptr to renderer\n");
         return;
     }
 
-    texturebank_t*  texturebank = &game->texturebank;
-    player_t*       p = &scene->player;
-    map_t*          map = &scene->map;
-    window_t*       window = &game->window;
+    if(!player)
+    {
+        LogMsg(WARN, "passed null ptr to player\n");
+        return;
+    }
+
+    if(!map)
+    {
+        LogMsg(WARN, "passed null ptr to map\n");
+        return;
+    }
+
+    texturebank_t*  texturebank = &render->textureBank;
+    window_t*       window = render->parentWindow;
 
     vertex2d_t playerDir;
     vertex2d_t plane;
-    int x;
 
-    playerDir   = V_AngToVec(p->viewAngle);
+    playerDir   = V_AngToVec(player->viewAngle);
     plane       = V_Mul(V_Normalise(V_GetPerpendicular(playerDir)), -1);
 
     texture_t* textures[10] = { 0 };
@@ -39,13 +47,13 @@ void R_RenderPlayerView(gamescene_t* scene, maingame_t* game)
         textures[i] = TB_GetTextureByIndex(texturebank, i);
     }
 
-    for(x = 0; x < window->width; x++)
+    for(int x = 0; x < window->width; x++)
     {
         float cameraX = (float)x / (float)window->width * 2.0f - 1.0f;
         vertex2d_t rayDir = V_Add(playerDir, V_Mul(plane, cameraX));
 
-        int mapX = (int)p->pos.x;
-        int mapY = (int)p->pos.y;
+        int mapX = (int)player->pos.x;
+        int mapY = (int)player->pos.y;
 
         vertex2d_t sideDist;
 
@@ -63,23 +71,23 @@ void R_RenderPlayerView(gamescene_t* scene, maingame_t* game)
         if(rayDir.x < 0)
         {
             stepX = -1;
-            sideDist.x = (p->pos.x - mapX) * deltaDist.x;
+            sideDist.x = (player->pos.x - mapX) * deltaDist.x;
         }
         else
         {
             stepX = 1;
-            sideDist.x = (mapX + 1.0f - p->pos.x) * deltaDist.x;
+            sideDist.x = (mapX + 1.0f - player->pos.x) * deltaDist.x;
         }
 
         if(rayDir.y < 0)
         {
             stepY = -1;
-            sideDist.y = (p->pos.y - mapY) * deltaDist.y;
+            sideDist.y = (player->pos.y - mapY) * deltaDist.y;
         }
         else
         {
             stepY = 1;
-            sideDist.y = (mapY + 1.0f - p->pos.y) * deltaDist.y;
+            sideDist.y = (mapY + 1.0f - player->pos.y) * deltaDist.y;
         }
 
         while(hit == 0)
@@ -114,7 +122,7 @@ void R_RenderPlayerView(gamescene_t* scene, maingame_t* game)
 
         if(texNum < 0)
         {
-            LogMsg(ERROR, "couldnt find texture\n");
+            // LogMsg(ERROR, "couldnt find texture\n");
             continue;
         }
 
@@ -129,11 +137,11 @@ void R_RenderPlayerView(gamescene_t* scene, maingame_t* game)
 
         if(side == 0)
         {
-            wallX = p->pos.y + perpWallDist * rayDir.y;
+            wallX = player->pos.y + perpWallDist * rayDir.y;
         }
         else
         {
-            wallX = p->pos.x + perpWallDist * rayDir.x;
+            wallX = player->pos.x + perpWallDist * rayDir.x;
         }
         wallX -= floor(wallX);
 
@@ -156,19 +164,24 @@ void R_RenderPlayerView(gamescene_t* scene, maingame_t* game)
     }
 }
 
-void R_RenderPlayerGun(gamescene_t* scene, maingame_t* game)
+void R_RenderPlayerGun(renderer_t* render, player_t* player)
 {
-    if(!game)
+    if(!render)
     {
-        LogMsg(WARN, "passed null ptr to game\n");
+        LogMsg(WARN, "passed null ptr to renderer\n");
         return;
     }
 
-    window_t*       window = &game->window;
-    texturebank_t*  texturebank = &game->texturebank;
-    player_t*       p = &scene->player;
+    if(!player)
+    {
+        LogMsg(WARN, "passed null ptr to player\n");
+        return;
+    }
 
-    gun_t gun = p->currentGun;
+    window_t*       window = render->parentWindow;
+    texturebank_t*  texturebank = &render->textureBank;
+
+    gun_t gun = player->currentGun;
     texture_t* weaponTex = NULL;
 
     switch(gun)
@@ -193,8 +206,8 @@ void R_RenderPlayerGun(gamescene_t* scene, maingame_t* game)
 
     SDL_FRect dstRect = {(float)window->width * 0.6f - newTexDim.x * 0.5f, window->height - newTexDim.y * 0.7f, newTexDim.x, newTexDim.y};
 
-    dstRect.x += sinf(p->gunSway) * weaponTex->width * 0.5f;
-    dstRect.y -= fabs(sinf(p->gunSway)) * weaponTex->height * 0.3f * ratio;
+    dstRect.x += sinf(player->gunSway) * weaponTex->width * 0.5f;
+    dstRect.y -= fabs(sinf(player->gunSway)) * weaponTex->height * 0.3f * ratio;
     
     if(false)
     {
@@ -205,39 +218,53 @@ void R_RenderPlayerGun(gamescene_t* scene, maingame_t* game)
     SDL_RenderCopyF(window->sdlRenderer, weaponTex->data, NULL, &dstRect);
 }
 
-void R_RenderCeilingAndFloor(maingame_t* game)
+void R_RenderCeilingAndFloor(renderer_t* render, SDL_Color topColour, SDL_Color bottomColour)
 {
-    if(!game)
+    if(!render)
     {
-        LogMsg(WARN, "passed null ptr to game\n");
+        LogMsg(WARN, "passed null ptr to renderer\n");
         return;
     }
 
-    window_t* window = &game->window;
+    window_t* window = render->parentWindow;
 
     SDL_Rect dest = {0, 0, window->width, window->height / 2};
 
-    SDL_SetRenderDrawColor(window->sdlRenderer, 0x40, 0x40, 0x40, 0xff);
+    #define expandColour(sdlColour) sdlColour.r, sdlColour.g, sdlColour.b, sdlColour.a 
+
+    SDL_SetRenderDrawColor(window->sdlRenderer, expandColour(topColour));
     SDL_RenderFillRect(window->sdlRenderer, &dest);
     dest.y = window->height / 2;
-    SDL_SetRenderDrawColor(window->sdlRenderer, 0x60, 0x60, 0x60, 0xff);
+    SDL_SetRenderDrawColor(window->sdlRenderer, expandColour(bottomColour));
     SDL_RenderFillRect(window->sdlRenderer, &dest);
+
+    #undef expandColour
 }
 
 
 // updates the minimap texture and returns it if successful
-texture_t* R_UpdateMinimap(gamescene_t* scene, maingame_t* game)
+texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, map_t* map)
 {
-    if(!game)
+    if(!render)
     {
-        LogMsg(WARN, "passed null ptr to game\n");
+        LogMsg(WARN, "passed null ptr to renderer\n");
         return NULL;
     }
 
-    texturebank_t*  texturebank = &game->texturebank;
-    window_t*       window = &game->window;
-    map_t*          map = &scene->map;
-    player_t*       player = &scene->player;
+    if(!player)
+    {
+        LogMsg(WARN, "passed null ptr to player\n");
+        return NULL;
+    }
+
+    if(!map)
+    {
+        LogMsg(WARN, "passed null ptr to map\n");
+        return NULL;
+    }
+
+    texturebank_t*  texturebank = &render->textureBank;
+    window_t*       window = render->parentWindow;
 
     texture_t* minimapTex = TB_FindTextureByName(texturebank, "MINIMAP"), *playerTex = TB_FindTextureByName(texturebank, "player");
     if(!minimapTex)
@@ -314,16 +341,28 @@ texture_t* R_UpdateMinimap(gamescene_t* scene, maingame_t* game)
 }
 
 void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius);
-void R_RenderMinimap(gamescene_t* scene, maingame_t* game)
+void R_RenderMinimap(renderer_t* render, player_t* player, map_t* map)
 {
-    if(!game)
+    if(!render)
     {
-        LogMsg(WARN, "passed null ptr to game\n");
+        LogMsg(WARN, "passed null ptr to renderer\n");
         return;
     }
 
-    window_t*       window = &game->window;
-    texture_t*      minimapTex = R_UpdateMinimap(scene, game);
+    if(!player)
+    {
+        LogMsg(WARN, "passed null ptr to player\n");
+        return;
+    }
+
+    if(!map)
+    {
+        LogMsg(WARN, "passed null ptr to map\n");
+        return;
+    }
+
+    window_t*       window = render->parentWindow;
+    texture_t*      minimapTex = R_UpdateMinimap(render, player, map);
 
     if(!minimapTex)
     {

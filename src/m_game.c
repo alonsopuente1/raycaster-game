@@ -88,8 +88,6 @@ void G_Destroy(maingame_t* game)
     
     game->running = false;
 
-    TB_FreeAllTextures(&game->texturebank);
-
     FreeLogs();
 
     FontCleanup();
