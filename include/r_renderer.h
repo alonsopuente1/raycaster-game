@@ -11,6 +11,8 @@ typedef struct renderer_s
     window_t*       parentWindow;
 
     float*          depthBuffer;
+    // number of elements in depth buffer array
+    int             depthBufferCount;
 
     texturebank_t   textureBank;
 
@@ -18,6 +20,7 @@ typedef struct renderer_s
 
 extern renderer_t R_CreateRenderer(window_t* parentWindow);
 
+// clears depth buffer too
 extern void R_ClearScreen(renderer_t* render, SDL_Color colour);
 extern void R_Present(renderer_t* render);
 

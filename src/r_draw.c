@@ -112,7 +112,14 @@ void R_RenderPlayerView(renderer_t* render, player_t* player, map_t* map)
 
         if(side == 0)   perpWallDist = (sideDist.x - deltaDist.x);
         else            perpWallDist = (sideDist.y - deltaDist.y);
-        
+
+        // this is kinda dangerous, relies on window width being same size as
+        // depth buffer
+        if(x < render->depthBufferCount && perpWallDist >= render->depthBuffer[x])
+        {
+            continue;
+        }
+
         int lineHeight = (int)((float)window->height / perpWallDist);
 
         int drawStart = -lineHeight / 2 + window->height / 2;
