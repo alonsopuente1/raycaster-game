@@ -30,6 +30,16 @@ vertex2d_t V_Div(const vertex2d_t a, float mag)
     return out;
 }
 
+float V_DotProduct(const vertex2d_t a, const vertex2d_t b)
+{
+    return (a.x * b.x) + (a.y * b.y);
+}
+
+float V_GetAngBetweenVecs(const vertex2d_t a, const vertex2d_t b)
+{
+    return acosf(V_DotProduct(a, b) / (V_GetMagnitude(a) * V_GetMagnitude(b)));
+}
+
 vertex2d_t V_GetPerpendicular(const vertex2d_t a)
 {
     vertex2d_t out = {a.y, -a.x};
