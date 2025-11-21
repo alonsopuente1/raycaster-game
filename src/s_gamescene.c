@@ -24,8 +24,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
 
     memset(gScene, 0, sizeof(gamescene_t));
 
-    /* TEXTURE LOADING */
-
+    
     // File paths for all textures to be loaded
     static const char* texturePaths[] = {
         "res/textures/env/bluestone.png",
@@ -38,9 +37,10 @@ void GS_SetupScene(void* scene, maingame_t* game)
         "res/textures/env/eagle.png",
         "res/textures/player.png",
         "res/textures/guns/PIST2.png",
-        "res/textures/guns/FIST.png"
+        "res/textures/guns/FIST.png",
+        "res/textures/enemies/cacodemon.png"
     };
-
+    
     gScene->renderer = R_CreateRenderer(&game->window);
     if(!gScene->renderer.parentWindow)
     {
@@ -48,9 +48,10 @@ void GS_SetupScene(void* scene, maingame_t* game)
         G_ChangeScene(game, "MainMenu");
         return;
     }
-
+    
+    /* TEXTURE LOADING */
     int NUMTEXTURES = ((int)(sizeof(texturePaths) / sizeof(texturePaths[0])));
-
+    
     for(int i = 0; i < NUMTEXTURES; i++)
     {
         if(!TB_PushTexture(gScene->renderer.parentWindow, &gScene->renderer.textureBank, texturePaths[i]))
@@ -58,6 +59,13 @@ void GS_SetupScene(void* scene, maingame_t* game)
             LogMsgf(ERROR, "failed to load texture at file path '%s'\n", texturePaths[i]);
         }
     }    
+    
+    gScene->entity = (entity_t){
+        TB_FindTextureByName(&gScene->renderer.textureBank, "cacodemon"),
+        (vertex2d_t){0.f, 0.f},
+        (vertex2d_t){0.f, 0.f},
+        (vertex2d_t){3.f, 3.f},
+    };
 
     texture_t* texture = TB_AddEmptyTexture(&gScene->renderer.textureBank);
     if(!texture)
@@ -197,7 +205,8 @@ void GS_Draw(void* scene, maingame_t* game)
     R_RenderPlayerView(render, &gScene->player, &gScene->map);
     R_RenderPlayerGun(render, &gScene->player);
     R_RenderMinimap(render, &gScene->player, &gScene->map);
-    
+    E_DrawEntity(render, &gScene->player, &gScene->entity);
+
     R_Present(render);
 }
 
@@ -242,6 +251,7 @@ void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e)
         gScene->player.maxMoveSpeed = mapArgs.maxSpeed;
         gScene->player.pos = mapArgs.startPos;
         gScene->player.rotateSpeed = mapArgs.rotateSpeed;
+        gScene->player.fov = 90.f * (M_PI / 180.f);
         
         break;
     } // EVENT_LOADMAP

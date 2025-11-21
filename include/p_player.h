@@ -19,7 +19,8 @@ typedef struct player_s
     // stored in radians
     float           viewAngle;
     float           maxMoveSpeed;
-    
+    float           fov;
+
     vertex2d_t      acc;
     vertex2d_t      vel;
     vertex2d_t      pos;

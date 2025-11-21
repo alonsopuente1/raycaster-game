@@ -38,7 +38,8 @@ void R_RenderPlayerView(renderer_t* render, player_t* player, map_t* map)
     vertex2d_t plane;
 
     playerDir   = V_AngToVec(player->viewAngle);
-    plane       = V_Mul(V_Normalise(V_GetPerpendicular(playerDir)), -1);
+    plane = V_GetPerpendicular(playerDir);
+    V_SetMagnitude(&plane, -tanf(player->fov / 2.f));
 
     texture_t* textures[10] = { 0 };
 
@@ -119,6 +120,8 @@ void R_RenderPlayerView(renderer_t* render, player_t* player, map_t* map)
         {
             continue;
         }
+
+        render->depthBuffer[x] = perpWallDist;
 
         int lineHeight = (int)((float)window->height / perpWallDist);
 

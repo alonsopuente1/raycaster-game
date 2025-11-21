@@ -6,6 +6,7 @@
 #include "p_player.h"
 #include "map.h"
 #include "r_renderer.h"
+#include "e_entity.h"
 
 #include <SDL2/SDL_mixer.h>
 
@@ -24,7 +25,9 @@ typedef struct gamescene_s
 
     Mix_Chunk*          footstep1;
     Mix_Chunk*          footstep2;  
-    
+
+    entity_t            entity;
+
     renderer_t          renderer;
 } gamescene_t;
 #pragma pack(pop)
