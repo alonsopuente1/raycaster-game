@@ -67,3 +67,12 @@ void E_DrawEntity(renderer_t* render, player_t* player, entity_t* e)
     }
 
 }
+
+bool E_IsEqual(entity_t a, entity_t b)
+{
+    return (a.entityTex == b.entityTex && 
+            V_IsEqual(a.acc, b.acc) && 
+            V_IsEqual(a.vel, b.vel) &&
+            V_IsEqual(a.pos, b.pos)  
+    );
+}

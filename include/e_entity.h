@@ -3,6 +3,8 @@
 
 #include "v_vert.h"
 
+#include <stdbool.h>
+
 typedef struct texture_s texture_t;
 typedef struct renderer_s renderer_t;
 typedef struct player_s player_t;
@@ -19,5 +21,6 @@ typedef struct entity_s
 } entity_t;
 
 extern void E_DrawEntity(renderer_t* render, player_t* player, entity_t* e);
+extern bool E_IsEqual(entity_t a, entity_t b);
 
 #endif

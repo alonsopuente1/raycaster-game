@@ -3,6 +3,8 @@
 
 #include "v_vert.h"
 
+#include <stdbool.h>
+
 extern vertex2d_t V_Make(const float a, const float b);
 extern vertex2d_t V_Add(const vertex2d_t a, const vertex2d_t b);
 extern vertex2d_t V_Sub(const vertex2d_t a, const vertex2d_t b);
@@ -11,6 +13,8 @@ extern vertex2d_t V_Div(const vertex2d_t a, float mag);
 extern float      V_DotProduct(const vertex2d_t a, const vertex2d_t b);
 // returns angle in radians
 extern float      V_GetAngBetweenVecs(const vertex2d_t a, const vertex2d_t b);
+
+extern bool       V_IsEqual(vertex2d_t a, vertex2d_t b);
 
 // gets the perpendicular vector to 'a' 90 degrees anti-clockwise
 extern vertex2d_t V_GetPerpendicular(const vertex2d_t a);

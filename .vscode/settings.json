@@ -19,6 +19,8 @@
         "s_mainmenuscene.h": "c",
         "r_renderer.h": "c",
         "settings.h": "c",
-        "w_buttons.h": "c"
+        "w_buttons.h": "c",
+        "stdbool.h": "c",
+        "e_entitymanager.h": "c"
     }
 }
