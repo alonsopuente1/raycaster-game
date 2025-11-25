@@ -1,7 +1,6 @@
 CC 			= gcc
 
 CFLAGS		= -g -I./include -Wextra -Wall -Wno-unused-parameter
-FLECSFLAGS  = -g -I./include/flecs -std=gnu99
 LINKFLAGS	= -g -L./lib -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_image -llogger64 -lWinmm -lGdi32 -lRpcrt4 -lWs2_32 -lDbghelp
 
 # folder to store .o files
@@ -12,8 +11,6 @@ SRC			= src
 C_FILES := $(subst src/,$(empty),$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
 OBJS := \
 	$(foreach file,$(C_FILES),$(OUT)/$(file:.c=.o))
-
-OBJS += $(OUT)/flecs/flecs.o
 
 all: | $(OUT) RayCaster 
 
@@ -29,7 +26,6 @@ $(OUT)/flecs/flecs.o: $(SRC)/flecs/flecs.c
 
 $(OUT):
 	mkdir -p $(OUT)
-	mkdir -p $(OUT)/flecs
 
 clean:
 	rm $(OUT)/*.o

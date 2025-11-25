@@ -24,7 +24,6 @@ void GS_SetupScene(void* scene, maingame_t* game)
 
     memset(gScene, 0, sizeof(gamescene_t));
 
-    
     // File paths for all textures to be loaded
     static const char* texturePaths[] = {
         "res/textures/env/bluestone.png",

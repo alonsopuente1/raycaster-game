@@ -99,16 +99,13 @@ void MMS_HandleEvents(void* scene, maingame_t* game, SDL_Event* event)
         {
             switch(mmScene->state)
             {
-                case MAINMENU:
-                {
-                    game->running = false;
-                    break;
-                }
                 case MAPCHOOSE:
                 {
                     mmScene->state = MAINMENU;
                     break;
                 }
+                default:
+                    break;
             }
         }
     }

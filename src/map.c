@@ -26,19 +26,20 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
         return;
     }
 
+    
     FILE*       file;
     char        buffer[1024];
-
+    
     file = fopen(filePath, "r");
-
+    
     mapArgs->success = false;
-
+    
     if(!file)
     {
         LogMsgf(ERROR, "Failed to open map file: %s\n", filePath);
         return;
     }
-
+    
     map->filePath = malloc(strlen(filePath) + 1);
     if(!map->filePath)
     {
@@ -48,18 +49,18 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
     }
     strcpy(map->filePath, filePath);
     map->filePath[strlen(filePath)] = '\0';
-
+    
     while(!feof(file))
     {
         memset(buffer, 0, 1024);
         fgets(buffer, 1024, file);
-
+        
         if(buffer[0] == '#' || buffer[0] == '\n' || buffer[0] == '\r')
-            continue;
-
+        continue;
+        
         char* token = strtok(buffer, " \t\n\r");
         if(!token)
-            continue;
+        continue;
         
         // parse map data
 
