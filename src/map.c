@@ -26,7 +26,6 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
         return;
     }
 
-    
     FILE*       file;
     char        buffer[1024];
     
@@ -50,6 +49,8 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
     strcpy(map->filePath, filePath);
     map->filePath[strlen(filePath)] = '\0';
     
+    M_Free(map);
+
     while(!feof(file))
     {
         memset(buffer, 0, 1024);
