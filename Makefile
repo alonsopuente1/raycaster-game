@@ -4,7 +4,7 @@ CFLAGS		= -I./include -Wextra -Wall -Wno-unused-parameter
 
 LINKFLAGS 	=
 ifeq ($(OS), Windows_NT)
-	LINKFLAGS += -L./lib/windows -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_image -llogger64 -lWinmm -lGdi32 -lRpcrt4 -lWs2_32 -lDbghelp
+	LINKFLAGS += -L./lib/windows -lSDL2main -lSDL2 -lSDL2_ttf -lSDL2_mixer -lSDL2_image -lWinmm -lGdi32 -lRpcrt4 -lWs2_32 -lDbghelp
 else
 	LINKFLAGS += -L/usr/local/lib/ $(shell pkg-config --libs sdl2 SDL2_ttf SDL2_image SDL2_mixer) -lm
 endif
