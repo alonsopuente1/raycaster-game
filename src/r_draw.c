@@ -8,6 +8,8 @@
 #include "v_funcs.h"
 #include "p_player.h"
 #include "map.h"
+#include "e_entity.h"
+#include "e_entitymanager.h"
 
 #include "logger.h"
 
@@ -253,7 +255,7 @@ void R_RenderCeilingAndFloor(renderer_t* render, SDL_Color topColour, SDL_Color 
 
 
 // updates the minimap texture and returns it if successful
-texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, map_t* map)
+texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t* em, map_t* map)
 {
     if(!render)
     {
@@ -270,6 +272,12 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, map_t* map)
     if(!map)
     {
         LogMsg(WARN, "passed null ptr to map\n");
+        return NULL;
+    }
+
+    if(!em)
+    {
+        LogMsg(WARN, "passed null ptr to entity manager\n");
         return NULL;
     }
 
@@ -289,21 +297,15 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, map_t* map)
         return NULL;
     }
 
-    SDL_Texture* blueCell = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
-    SDL_Texture* blackCell = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
-    
-    SDL_SetRenderTarget(window->sdlRenderer, blueCell);
-    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0xff, 0xff);
-    SDL_RenderClear(window->sdlRenderer);
-
-
-    SDL_SetRenderTarget(window->sdlRenderer, blackCell);
-    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0, 0xff);
-    SDL_RenderClear(window->sdlRenderer);
-
-
+    // clear minimap first
     SDL_SetRenderTarget(window->sdlRenderer, minimapTex->data);
-    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0, 0xff);
+    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(window->sdlRenderer);
+
+    SDL_Texture* cell = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
+
+    SDL_SetRenderTarget(window->sdlRenderer, cell);
+    SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0xff, 0xff);
     SDL_RenderClear(window->sdlRenderer);
 
     float       rectWidth;
@@ -313,6 +315,8 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, map_t* map)
 
     rectWidth   = minimapTex->width / map->mapWidth;
     rectHeight  = minimapTex->height / map->mapHeight;
+
+    /* DRAW WALLS ON MINIMAP */
 
     SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_BLEND);
     for(y = 0; y < map->mapHeight; y++)
@@ -327,31 +331,59 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, map_t* map)
             cellScreenRect.w = rectWidth;
             cellScreenRect.h = rectHeight;
 
+            SDL_SetRenderTarget(window->sdlRenderer, cell);
             bool blue = M_GetMapCell(map, y * map->mapWidth + x) > 0;
+            if(blue)
+                SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 255, 255);
+            else
+                SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0, 255);            
+
+            SDL_RenderClear(window->sdlRenderer);
+            SDL_SetRenderTarget(window->sdlRenderer, minimapTex->data);
 
             SDL_Point centreRotation = (SDL_Point){minimapTex->width / 2 - cellScreenRect.x, minimapTex->height / 2 - cellScreenRect.y};
 
-            if(SDL_RenderCopyEx(window->sdlRenderer, blue ? blueCell : blackCell, NULL, &cellScreenRect, -(player->viewAngle + M_PI / 2) * (180 / M_PI), &centreRotation, (SDL_RendererFlip)0) < 0)
+            if(SDL_RenderCopyEx(window->sdlRenderer, cell, NULL, &cellScreenRect, -(player->viewAngle + M_PI / 2) * (180 / M_PI), &centreRotation, (SDL_RendererFlip)0) < 0)
                 LogMsg(ERROR, "failed to render map cell on minimap texture\n");
         }
     }
-
     SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_NONE);
     
+    /* DRAW ENEMIES ON MINIMAP */
+    SDL_SetRenderTarget(window->sdlRenderer, cell);
+    SDL_SetRenderDrawColor(window->sdlRenderer, 255, 0, 0, 255);
+    SDL_RenderClear(window->sdlRenderer);
+    SDL_SetRenderTarget(window->sdlRenderer, minimapTex->data);
+    for(entity_t* i = em->entities; i - em->entities < em->numEntities; i++)
+    {
+        SDL_Rect entityScreenRect = {0};
+
+        entityScreenRect.x = i->pos.x * rectWidth + minimapTex->width / 2 - player->pos.x * rectWidth;
+        entityScreenRect.y = i->pos.y * rectHeight + minimapTex->height / 2 - player->pos.y * rectHeight;
+
+        entityScreenRect.w = rectWidth;
+        entityScreenRect.h = rectHeight;
+
+            SDL_Point centreRotation = (SDL_Point){minimapTex->width / 2 - entityScreenRect.x, minimapTex->height / 2 - entityScreenRect.y};
+
+        SDL_RenderCopyEx(window->sdlRenderer, cell, NULL, &entityScreenRect, -(player->viewAngle + M_PI / 2) * (180 / M_PI), &centreRotation, (SDL_RendererFlip)0);
+    }
+
+    /* DRAW PLAYER ON MINIMAP */
+
     SDL_Rect playerRect = (SDL_Rect){minimapTex->width / 2 - 2, minimapTex->height / 2 - 2, 4, 4};
     SDL_SetRenderDrawColor(window->sdlRenderer, 0, 255, 0, 255);
     SDL_RenderDrawRect(window->sdlRenderer, &playerRect);
 
     SDL_SetRenderTarget(window->sdlRenderer, NULL);
 
-    SDL_DestroyTexture(blackCell);
-    SDL_DestroyTexture(blueCell);
+    SDL_DestroyTexture(cell);
 
     return minimapTex;
 }
 
 void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius);
-void R_RenderMinimap(renderer_t* render, player_t* player, map_t* map)
+void R_RenderMinimap(renderer_t* render, player_t* player, entitymanager_t* em,  map_t* map)
 {
     if(!render)
     {
@@ -371,8 +403,14 @@ void R_RenderMinimap(renderer_t* render, player_t* player, map_t* map)
         return;
     }
 
+    if(!em)
+    {
+        LogMsg(WARN, "passed null ptr to entity manager\n");
+        return;
+    }
+
     window_t*       window = render->parentWindow;
-    texture_t*      minimapTex = R_UpdateMinimap(render, player, map);
+    texture_t*      minimapTex = R_UpdateMinimap(render, player, em, map);
 
     if(!minimapTex)
     {

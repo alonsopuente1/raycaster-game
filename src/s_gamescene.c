@@ -203,7 +203,7 @@ void GS_Draw(void* scene, maingame_t* game)
     R_RenderCeilingAndFloor(render, (SDL_Color){40, 40, 40, 255}, (SDL_Color){60, 60, 60, 255});
     R_RenderPlayerView(render, &gScene->player, &gScene->map);
     R_RenderPlayerGun(render, &gScene->player);
-    R_RenderMinimap(render, &gScene->player, &gScene->map);
+    R_RenderMinimap(render, &gScene->player, &gScene->entityManager, &gScene->map);
 
     for(entity_t* i = gScene->entityManager.entities; EM_IsInEntityList(&gScene->entityManager, i); i++)
     {
