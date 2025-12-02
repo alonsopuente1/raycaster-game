@@ -26,10 +26,6 @@ RayCaster: $(OBJS)
 $(OUT)/%.o: $(SRC)/%.c
 	$(CC) -Wall -g $(CFLAGS) -c $< -o $@
 
-$(OUT)/flecs/flecs.o: $(SRC)/flecs/flecs.c
-	$(CC) $(FLECSFLAGS) -c $< -o $@
-
-
 $(OUT):
 	mkdir -p $(OUT)
 
