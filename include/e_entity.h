@@ -8,17 +8,26 @@
 typedef struct texture_s texture_t;
 typedef struct renderer_s renderer_t;
 typedef struct player_s player_t;
+typedef struct entitymanager_s entitymanager_t;
+typedef struct map_s map_t;
 
 typedef struct entity_s
 {
 
-    texture_t*      entityTex;
+    texture_t*          entityTex;
 
-    vertex2d_t      acc;
-    vertex2d_t      vel;
-    vertex2d_t      pos;
+    vertex2d_t          acc;
+    vertex2d_t          vel;
+    vertex2d_t          pos;
 
-    bool            active;
+    // if false, entity is not processed or drawn
+    bool                active;
+
+    // function pointer for entity specific logic
+    void                (*think)(struct entity_s* e, float deltaTime);
+
+    map_t*              currentMap;
+    entitymanager_t*    currentEM;
 
 } entity_t;
 

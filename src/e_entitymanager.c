@@ -24,6 +24,8 @@ entity_t* EM_PushEntity(entitymanager_t* em, entity_t* e)
 
     em->entities[em->numEntities] = *e;
 
+    e->currentEM = em;
+
     return &em->entities[em->numEntities++];
 }
 
@@ -92,4 +94,22 @@ bool EM_RemoveEntity(entitymanager_t* em, entity_t* e)
     
     em->numEntities--;
     return true;
+}
+
+void EM_InitEntityManager(entitymanager_t* em)
+{
+    if(!em)
+    {
+        LogMsg(ERROR, "passed null ptr to entity manager\n");
+        return;
+    }
+
+    em->numEntities = 0;
+    memset(em->entities, 0, sizeof(entity_t) * EM_MAX_ENTITIES);
+
+    for(int i = 0; i < EM_MAX_ENTITIES; i++)
+    {
+        em->entities[i].active = false;
+        em->entities[i].currentEM = em;
+    }
 }

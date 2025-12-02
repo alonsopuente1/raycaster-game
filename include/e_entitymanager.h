@@ -24,4 +24,6 @@ extern entity_t* EM_IsInEntityList(entitymanager_t* em, entity_t* e);
 // doesnt matter if entity is copy or belongs to the list
 extern bool EM_RemoveEntity(entitymanager_t* em, entity_t* e);
 
+extern void EM_InitEntityManager(entitymanager_t* em);
+
 #endif
