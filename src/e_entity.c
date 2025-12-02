@@ -18,6 +18,9 @@ void E_DrawEntity(renderer_t* render, player_t* player, entity_t* e)
         return;
     }
 
+    if(!e->active)
+        return;
+
     if(!render)
     {
         LogMsg(WARN, "passed null ptr to renderer\n");
@@ -63,7 +66,10 @@ void E_DrawEntity(renderer_t* render, player_t* player, entity_t* e)
         SDL_Rect dst = {i, -spriteHeight / 2 + render->parentWindow->height / 2.f, 1, spriteHeight};
 
         if(transform.y > 0 && i > 0 && i < render->parentWindow->width && transform.y < render->depthBuffer[i])
+        {
+            render->depthBuffer[i] = transform.y;
             SDL_RenderCopy(sdlRenderer, tex->data, &src, &dst);
+        }
     }
 
 }

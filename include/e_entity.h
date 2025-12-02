@@ -18,6 +18,8 @@ typedef struct entity_s
     vertex2d_t      vel;
     vertex2d_t      pos;
 
+    bool            active;
+
 } entity_t;
 
 extern void E_DrawEntity(renderer_t* render, player_t* player, entity_t* e);

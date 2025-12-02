@@ -41,11 +41,11 @@ entity_t* EM_IsInEntityList(entitymanager_t* em, entity_t* e)
         return NULL;
     }
 
-    // if e is in the address space of em->entities 
+    // first check if e is in the address space of em->entities 
     if(em->entities <= e && e <= em->entities + em->numEntities - 1)
         return e;
 
-    // else check if its a copy
+    // otherwise check if its a copy
     for(unsigned int i = 0; i < em->numEntities; i++)
         if(E_IsEqual(em->entities[i], *e))
             return &em->entities[i];
@@ -81,10 +81,15 @@ bool EM_RemoveEntity(entitymanager_t* em, entity_t* e)
         return false;
     }
 
-    if(e == &em->entities[em->numEntities - 1])
+    // if entity is last one in the list simple remove operation, pop it off
+    if(entity == &em->entities[em->numEntities - 1])
     {
-        
+        em->entities[em->numEntities - 1] = (entity_t){0};
     }
-
-    return false;
+    // else every entity in front needs to be moved one space back
+    else
+        memmove(entity, entity + 1, (int)sizeof(entity_t) * (int)(&em->entities[em->numEntities - 1] - entity));
+    
+    em->numEntities--;
+    return true;
 }

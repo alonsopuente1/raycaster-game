@@ -58,12 +58,13 @@ void GS_SetupScene(void* scene, maingame_t* game)
         }
     }    
     
-    gScene->entity = (entity_t){
+    EM_PushEntity(&gScene->entityManager, &(entity_t){
         TB_FindTextureByName(&gScene->renderer.textureBank, "cacodemon"),
         (vertex2d_t){0.f, 0.f},
         (vertex2d_t){0.f, 0.f},
         (vertex2d_t){3.f, 3.f},
-    };
+        true
+    });
 
     texture_t* texture = TB_AddEmptyTexture(&gScene->renderer.textureBank);
     if(!texture)
@@ -203,7 +204,11 @@ void GS_Draw(void* scene, maingame_t* game)
     R_RenderPlayerView(render, &gScene->player, &gScene->map);
     R_RenderPlayerGun(render, &gScene->player);
     R_RenderMinimap(render, &gScene->player, &gScene->map);
-    E_DrawEntity(render, &gScene->player, &gScene->entity);
+
+    for(entity_t* i = gScene->entityManager.entities; EM_IsInEntityList(&gScene->entityManager, i); i++)
+    {
+        E_DrawEntity(&gScene->renderer, &gScene->player, i);
+    }
 
     R_Present(render);
 }

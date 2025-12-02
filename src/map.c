@@ -46,7 +46,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
         CLEANUP();
         return;
     }
-    strcpy(map->filePath, filePath);
+    strncpy(map->filePath, filePath, strlen(filePath));
     map->filePath[strlen(filePath)] = '\0';
     
     M_Free(map);
