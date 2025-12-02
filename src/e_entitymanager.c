@@ -46,7 +46,7 @@ entity_t* EM_IsInEntityList(entitymanager_t* em, entity_t* e)
         return e;
 
     // else check if its a copy
-    for(int i = 0; i < em->numEntities; i++)
+    for(unsigned int i = 0; i < em->numEntities; i++)
         if(E_IsEqual(em->entities[i], *e))
             return &em->entities[i];
 

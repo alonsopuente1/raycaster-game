@@ -152,6 +152,7 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
 
     DIR* dDir;
     struct dirent* ent = NULL;
+    int filesFound = 0;
 
     dDir = opendir(dir);
     if(!dDir)
@@ -160,13 +161,64 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
         return NULL;
     }
 
-    while((ent = readdir(dDir)) != NULL)
+    ent = readdir(dDir);
+    while(ent != NULL)
     {
-        LogMsgf(DEBUG, "found file: %s\n", ent->d_name);
+        if(strcmp(ent->d_name, ".") == 0 || strcmp(ent->d_name, "..") == 0)
+        {
+            ent = readdir(dDir);
+            continue;
+        }
+
+        // check if last four characters match .sdm
+        if(strlen(ent->d_name) < 4)
+        {
+            ent = readdir(dDir);
+            continue;
+        }
+
+        if(strcmp(ent->d_name + strlen(ent->d_name) - 4, ".sdm") != 0)
+        {
+            ent = readdir(dDir);
+            continue;
+        }
+
+        // form file path
+        char fullPath[256] = { 0 };
+        char** newPtr = realloc(output, sizeof(char*) * (filesFound + 1));
+        if(!newPtr)
+        {
+            LogMsg(ERROR, "failed to allocate more memory for list of files\n");
+            FreeDynamicArrayOfAllocatedElements((void**)output, filesFound);
+            output = NULL;
+            break;
+        }
+        
+        output = newPtr;
+
+        strncat(fullPath, dir, sizeof(fullPath) - 1);
+        strncat(fullPath, "/", sizeof(fullPath) - 1);
+        strncat(fullPath, ent->d_name, sizeof(fullPath) - 1);
+
+        output[filesFound] = calloc(strlen(fullPath) + 1, sizeof(char));
+        if(!output[filesFound])
+        {
+            LogMsgf(ERROR, "failed to allocate memory for file path. skipping file '%s'\n", ent->d_name);
+            output = realloc(output, sizeof(char*) * filesFound); // safe to continue without checking since realloc earlier mustve succeeded and here we're only shrinking the memory block allocated
+            continue;
+        }
+
+        strncpy(output[filesFound], fullPath, strlen(fullPath));
+        
+        filesFound += 1;
+        LogMsgf(DEBUG, "found file %s\n", fullPath);        
+
+        ent = readdir(dDir);
     }
 
     closedir(dDir);
 
+    *numFiles = filesFound;
     return output;
 }
 #endif

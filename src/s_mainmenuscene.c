@@ -48,7 +48,12 @@ void MMS_SetupScene(void* scene, maingame_t* game)
     W_SetButtonText(&mmScene->startButton, "Play");
     W_SetButtonText(&mmScene->exitButton, "Quit");
 
+#ifdef _WIN32
     mmScene->mapFiles = GetAllFilesInDir("./res/maps/*.sdm", &mmScene->numMapFiles);
+#elif defined(__linux__)
+    mmScene->mapFiles = GetAllFilesInDir("./res/maps", &mmScene->numMapFiles);
+#endif
+    
     mmScene->mapFileButtons = calloc(mmScene->numMapFiles, sizeof(winButton_t));
 
     int backButtonWidth = 100;
