@@ -19,8 +19,12 @@ typedef struct entitymanager_s
 // returns pointer to the new entity in the array
 extern entity_t* EM_PushEntity(entitymanager_t* em, entity_t* e);
 
-// returns pointer to the entity in the list
+extern void EM_UpdateEntities(entitymanager_t* em, float deltaTime, map_t* m);
+
+// returns pointer to the entity in the entity manager's list
+// can pass a copy of the entity or actual entity pointer
 extern entity_t* EM_IsInEntityList(entitymanager_t* em, entity_t* e);
+
 // doesnt matter if entity is copy or belongs to the list
 extern bool EM_RemoveEntity(entitymanager_t* em, entity_t* e);
 

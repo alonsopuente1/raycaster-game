@@ -80,3 +80,13 @@ void V_SetMagnitude(vertex2d_t* a, const float mag)
         return;
     *a = V_Mul(*a, mag / V_GetMagnitude(*a));
 }
+
+float      V_DegToRad(const float deg)
+{
+    return deg * (acosf(-1) / 180.f);
+}
+
+float      V_RadToDeg(const float rad)
+{
+    return rad * (180.f / acosf(-1));
+}

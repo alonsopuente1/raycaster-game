@@ -3,6 +3,7 @@
 #include "v_funcs.h"
 #include "r_renderer.h"
 #include "p_player.h"
+#include "map.h"
 
 #include <SDL2/SDL.h>
 
@@ -58,6 +59,7 @@ void E_DrawEntity(renderer_t* render, player_t* player, entity_t* e)
     int drawStartX = -spriteWidth / 2.f + spriteScreenX;
     int drawEndX = spriteWidth / 2.f + spriteScreenX;
 
+    SDL_SetRenderDrawBlendMode(sdlRenderer, SDL_BLENDMODE_BLEND);
     for(int i = drawStartX; i < drawEndX; i++)
     {
         int texX = (int)((float)(i - drawStartX) / (float)(drawEndX - drawStartX) * tex->width);
@@ -71,10 +73,42 @@ void E_DrawEntity(renderer_t* render, player_t* player, entity_t* e)
             SDL_RenderCopy(sdlRenderer, tex->data, &src, &dst);
         }
     }
-
+    SDL_SetRenderDrawBlendMode(sdlRenderer, SDL_BLENDMODE_NONE);
 }
 
 bool E_IsEqual(entity_t a, entity_t b)
 {
     return memcmp(&a, &b, sizeof(entity_t)) == 0;
+}
+
+void E_Update(entity_t* e, float deltaTime, map_t* m)
+{
+    if(!e)
+    {
+        LogMsg(WARN, "passed null ptr to entity\n");
+        return;
+    }
+
+    if(!e->active)
+        return;
+
+    if(e->think)
+        e->think(e, deltaTime);
+
+    e->vel = V_Add(e->vel, V_Mul(e->acc, deltaTime));
+    if(V_GetMagnitude(e->vel) > e->maxSpeed)
+        V_SetMagnitude(&e->vel, e->maxSpeed);
+
+    e->pos = V_Add(e->pos, V_Mul(e->vel, deltaTime));
+
+    // simple collision with walls
+    if(m)
+    {
+        // does adding x put entity in wall?
+        if(M_GetMapCell(m, (int)e->pos.y * m->mapWidth + (int)(e->pos.x)) > 0)
+            e->pos.x -= e->vel.x * deltaTime;
+        // does adding y put entity in wall?
+        if(M_GetMapCell(m, (int)(e->pos.y) * m->mapWidth + (int)(e->pos.x)) > 0)
+            e->pos.y -= e->vel.y * deltaTime;
+    }
 }

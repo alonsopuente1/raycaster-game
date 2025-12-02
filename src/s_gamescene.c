@@ -6,6 +6,7 @@
 #include "v_funcs.h"
 #include "m_game.h"
 #include "w_window.h"
+#include "e_cacodemon.h"
 
 #include "logger.h"
 
@@ -57,15 +58,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
             LogMsgf(ERROR, "failed to load texture at file path '%s'\n", texturePaths[i]);
         }
     }    
-    
-    EM_PushEntity(&gScene->entityManager, &(entity_t){
-        TB_FindTextureByName(&gScene->renderer.textureBank, "cacodemon"),
-        (vertex2d_t){0.f, 0.f},
-        (vertex2d_t){0.f, 0.f},
-        (vertex2d_t){3.f, 3.f},
-        true
-    });
-
+    /* MINIMAP TEXTURE CREATE */
     texture_t* texture = TB_AddEmptyTexture(&gScene->renderer.textureBank);
     if(!texture)
     {
@@ -80,6 +73,28 @@ void GS_SetupScene(void* scene, maingame_t* game)
         SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to add empty texture for minimap!", NULL);
         G_ChangeScene(game, "MainMenu");
         return;
+    }
+
+    /* ENTITY MANAGER INIT */
+
+    EM_InitEntityManager(&gScene->entityManager);
+
+    for(int i = 0; i < 5; i++)
+    {
+        entity_t e = CACOD_CreateCacodemonEntity(3.5f + i * 2.f, 3.5f);
+        e.angle = V_DegToRad(180.f);
+        e.entityTex = TB_FindTextureByName(&gScene->renderer.textureBank, "cacodemon");
+        if(!e.entityTex)
+        {
+            LogMsg(ERROR, "failed to find cacodemon texture in texture bank\n");
+            G_ChangeScene(game, "MainMenu");
+            return;
+        }
+        e.currentMap = &gScene->map;
+        if(!EM_PushEntity(&gScene->entityManager, &e))
+        {
+            LogMsg(ERROR, "failed to add cacodemon entity to entity manager\n");
+        }
     }
 
     /* AUDIO LOADING */
@@ -172,6 +187,8 @@ void GS_Update(void* scene, maingame_t* game, float dt)
         return;
 
     P_HandleState(&gScene->player, &gScene->map, dt);
+
+    EM_UpdateEntities(&gScene->entityManager, dt, &gScene->map);
 
     if(SDL_GetWindowFlags(game->window.sdlWindow) & SDL_WINDOW_INPUT_FOCUS)
         SDL_SetRelativeMouseMode(SDL_TRUE);

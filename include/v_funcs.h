@@ -28,4 +28,7 @@ extern vertex2d_t V_Normalise(const vertex2d_t a);
 // angle in radians
 extern vertex2d_t V_Rotate(const vertex2d_t a, const float angle);
 
+extern float      V_DegToRad(const float deg);
+extern float      V_RadToDeg(const float rad);
+
 #endif
