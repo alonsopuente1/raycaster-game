@@ -9,7 +9,6 @@
 
 #include "logger.h"
 
-#include <Windows.h>
 #include <SDL2/SDL.h>
 
 /* FORWARD DECLARATIONS */
@@ -69,7 +68,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
     texture_t* texture = TB_AddEmptyTexture(&gScene->renderer.textureBank);
     if(!texture)
     {
-        MessageBoxA(NULL, "Failed to add empty texture for minimap!", "Error!", MB_ICONERROR | MB_OK);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to add empty texture to texture bank for minimap!", NULL);
         G_ChangeScene(game, "MainMenu");
         return;
     }
@@ -77,7 +76,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
     *texture = T_CreateBlankTexture(gScene->renderer.parentWindow, "MINIMAP", 256, 256);
     if(!texture->data)
     {
-        MessageBoxA(NULL, "Failed to add empty texture for minimap!", "Error!", MB_ICONERROR | MB_OK);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to add empty texture for minimap!", NULL);
         G_ChangeScene(game, "MainMenu");
         return;
     }
@@ -89,7 +88,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
     {
         char msgBuffer[256] = {0};
         snprintf(msgBuffer, sizeof(msgBuffer), "Failed to load footstep sound! MIX_ERROR: %s", Mix_GetError());
-        MessageBoxA(NULL, msgBuffer, "Error!", MB_ICONERROR | MB_OK);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", msgBuffer, NULL);
         G_ChangeScene(game, "MainMenu");
         return;
     }
@@ -101,7 +100,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
     {
         char msgBuffer[256] = {0};
         snprintf(msgBuffer, sizeof(msgBuffer), "Failed to load footstep sound! MIX_ERROR: %s", Mix_GetError());
-        MessageBoxA(NULL, msgBuffer, "Error!", MB_ICONERROR | MB_OK);
+        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", msgBuffer, NULL);
         G_ChangeScene(game, "MainMenu");
         return;
     }

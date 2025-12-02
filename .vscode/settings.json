@@ -21,6 +21,7 @@
         "settings.h": "c",
         "w_buttons.h": "c",
         "stdbool.h": "c",
-        "e_entitymanager.h": "c"
+        "e_entitymanager.h": "c",
+        "dirent.h": "c"
     }
 }

@@ -5,7 +5,6 @@
 #include "logger.h"
 #include "s_gameevents.h"
 
-#include <Windows.h>
 
 void MMS_SetupScene(void* scene, maingame_t* game)
 {

@@ -203,8 +203,8 @@ bool G_InitLibs()
     }
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
-        LogMsgf(ERROR, "Failed to init SDL2. SDL_ERROR: %s\n\tGetting out of here...\n", SDL_GetError());
         return false;
+        LogMsgf(ERROR, "Failed to init SDL2. SDL_ERROR: %s\n\tGetting out of here...\n", SDL_GetError());
     }
     if(Mix_Init(MIX_INIT_MP3 | MIX_INIT_WAVPACK) == 0)
     {

@@ -1,7 +1,11 @@
 #include "util.h"
 
 #include "logger.h"
+#ifdef _WIN32
 #include <Windows.h>
+#elif defined(__linux__)
+#include <dirent.h>
+#endif
 
 void FreeDynamicArrayOfAllocatedElements(void** array, int numElements)
 {
@@ -34,7 +38,12 @@ int GetLastChar(const char* str, char chr)
 }
 
 
+
+// im sorry
+// currently i cant think of a better way to do this
+// so for now this is how its going to look :(
 char** GetAllFilesInDir(const char* dir, int* numFiles)
+#ifdef _WIN32
 {
     if(!dir)
     {
@@ -110,7 +119,7 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
         if(!output[filesFound])
         {
             LogMsgf(ERROR, "failed to allocate memory for file path. skipping file '%s'\n", fFile.cFileName);
-            output = realloc(output, sizeof(char*) * filesFound);
+            output = realloc(output, sizeof(char*) * filesFound); // safe to continue without checking 
             continue;
         }
 
@@ -125,6 +134,42 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
     *numFiles = filesFound;
     return output;
 }
+#elif defined(__linux__)
+{
+    if(!dir)
+    {
+        LogMsg(ERROR, "passed null ptr to dir\n");
+        return NULL;
+    }
+
+    if(!numFiles)
+    {
+        LogMsg(ERROR, "passed null ptr to dir\n");
+        return NULL;
+    }
+
+    char** output = NULL;
+
+    DIR* dDir;
+    struct dirent* ent = NULL;
+
+    dDir = opendir(dir);
+    if(!dDir)
+    {
+        LogMsgf(ERROR, "failed to open directory at '%s'\n", dir);
+        return NULL;
+    }
+
+    while((ent = readdir(dDir)) != NULL)
+    {
+        LogMsgf(DEBUG, "found file: %s\n", ent->d_name);
+    }
+
+    closedir(dDir);
+
+    return output;
+}
+#endif
 
 void fileNameFromPath(const char* path, char* outName, int maxLen)
 {

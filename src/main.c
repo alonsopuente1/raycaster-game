@@ -5,10 +5,6 @@
 
 #include "logger.h"
 
-#ifdef linux
-#error linux support not implemented yet
-#endif
-
 maingame_t game = { 0 };
 
 int main(int argc, char** argv)
