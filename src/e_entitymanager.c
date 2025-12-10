@@ -31,7 +31,7 @@ entity_t* EM_PushEntity(entitymanager_t* em, entity_t* e)
 
 void EM_UpdateEntities(entitymanager_t* em, float deltaTime, map_t* m)
 {
-    for(int i = 0; i < em->numEntities; i++)
+    for(unsigned int i = 0; i < em->numEntities; i++)
     {
         E_Update(&em->entities[i], deltaTime, m);
         if(em->entities[i].markForDeletion)

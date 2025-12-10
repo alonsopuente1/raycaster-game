@@ -2,6 +2,7 @@
 #define __TEXTURES_H__
 
 #include <SDL2/SDL.h>
+#include <stdbool.h>
 
 typedef struct texture_s
 {
@@ -18,6 +19,7 @@ extern texture_t T_LoadTexture(window_t* window, const char* path);
 // creates a texture intended for drawing to the texture 
 // returns texture with texture_t.data == NULL on failure, not NULL on success
 extern texture_t T_CreateBlankTexture(window_t* window, const char* name, int width, int height);
+extern bool T_SetTextureName(texture_t* tex, const char* name);
 extern void T_FreeTexture(texture_t* tex);
 
 #endif 

@@ -10,9 +10,15 @@
 #include "map.h"
 #include "e_entity.h"
 #include "e_entitymanager.h"
+#include "texturebank.h"
+#include "r_renderer.h"
 
 #include "logger.h"
+/* FORWARD DECLARATIONS */
+texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t* em, map_t* map);
+void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius);
 
+/* PUBLIC FUNCTIONS*/
 void R_RenderPlayerView(renderer_t* render, player_t* player, map_t* map)
 {
     if(!render)
@@ -253,6 +259,90 @@ void R_RenderCeilingAndFloor(renderer_t* render, SDL_Color topColour, SDL_Color 
     #undef expandColour
 }
 
+void R_RenderMinimap(renderer_t* render, player_t* player, entitymanager_t* em,  map_t* map)
+{
+    if(!render)
+    {
+        LogMsg(WARN, "passed null ptr to renderer\n");
+        return;
+    }
+
+    if(!player)
+    {
+        LogMsg(WARN, "passed null ptr to player\n");
+        return;
+    }
+
+    if(!map)
+    {
+        LogMsg(WARN, "passed null ptr to map\n");
+        return;
+    }
+
+    if(!em)
+    {
+        LogMsg(WARN, "passed null ptr to entity manager\n");
+        return;
+    }
+
+    window_t*       window = render->parentWindow;
+    texture_t*      minimapTex = R_UpdateMinimap(render, player, em, map);
+
+    if(!minimapTex)
+    {
+        LogMsg(ERROR, "Failed to find minimap texture. did you forget to add an empty texture called MINIMAP to the games texturebank?\n");
+        return;
+    }
+    
+    float minimapRadius = window->width / 12;
+    vertex2d_t texturePos = (vertex2d_t){0.5f, 0.5f};
+    
+    SDL_Vertex* vertices = NULL;
+    int numVertices = 0;
+    R_FormVerticesForCircleFromTexture(&vertices, &numVertices, 20, 0, (vertex2d_t){minimapRadius + 10, minimapRadius + 10}, minimapRadius, texturePos, 0.5f);
+
+    if(!vertices)
+    {
+        LogMsg(ERROR, "failed to get vertices for minimap\n");
+        return;
+    }
+
+    if(SDL_RenderGeometry(window->sdlRenderer, minimapTex->data, vertices, numVertices, NULL, 0) < 0) 
+        LogMsgf(ERROR, "SDL_RenderGeometry failed to render minimap. SDL_ERROR:%s\n", SDL_GetError());
+
+    free(vertices);
+}
+
+bool R_RenderTexture(renderer_t* render, texture_t* tex, SDL_Rect src, SDL_Rect dst)
+{
+    if(!render)
+    {
+        LogMsg(ERROR, "passed null ptr to renderer\n");
+        return false;
+    }
+
+    if(!tex)
+    {
+        LogMsg(ERROR, "passed null ptr to tex\n");
+        return false;
+    }
+
+    if(!TB_IsTexInTextureBank(&render->textureBank, tex))
+    {
+        LogMsg(WARN, "failed to render texture: texture doesn't belong to the destination renderer");
+        return false;
+    }
+
+    if(SDL_RenderCopy(render->parentWindow->sdlRenderer, tex->data, &src, &dst) < 0)
+    {
+        LogMsgf(WARN, "failed to render texture: SDL_ERROR:%s\n", SDL_GetError());
+        return false;
+    }
+
+    return true;
+}
+
+/* PRIVATE FUNCTIONS */
 
 // updates the minimap texture and returns it if successful
 texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t* em, map_t* map)
@@ -381,62 +471,6 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t
 
     return minimapTex;
 }
-
-void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices, unsigned int numTriangles, float angle, vertex2d_t screenPos, float screenRadius, vertex2d_t texturePos, float textureRadius);
-void R_RenderMinimap(renderer_t* render, player_t* player, entitymanager_t* em,  map_t* map)
-{
-    if(!render)
-    {
-        LogMsg(WARN, "passed null ptr to renderer\n");
-        return;
-    }
-
-    if(!player)
-    {
-        LogMsg(WARN, "passed null ptr to player\n");
-        return;
-    }
-
-    if(!map)
-    {
-        LogMsg(WARN, "passed null ptr to map\n");
-        return;
-    }
-
-    if(!em)
-    {
-        LogMsg(WARN, "passed null ptr to entity manager\n");
-        return;
-    }
-
-    window_t*       window = render->parentWindow;
-    texture_t*      minimapTex = R_UpdateMinimap(render, player, em, map);
-
-    if(!minimapTex)
-    {
-        LogMsg(ERROR, "Failed to find minimap texture. did you forget to add an empty texture called MINIMAP to the games texturebank?\n");
-        return;
-    }
-    
-    float minimapRadius = window->width / 12;
-    vertex2d_t texturePos = (vertex2d_t){0.5f, 0.5f};
-    
-    SDL_Vertex* vertices = NULL;
-    int numVertices = 0;
-    R_FormVerticesForCircleFromTexture(&vertices, &numVertices, 20, 0, (vertex2d_t){minimapRadius + 10, minimapRadius + 10}, minimapRadius, texturePos, 0.5f);
-
-    if(!vertices)
-    {
-        LogMsg(ERROR, "failed to get vertices for minimap\n");
-        return;
-    }
-
-    if(SDL_RenderGeometry(window->sdlRenderer, minimapTex->data, vertices, numVertices, NULL, 0) < 0) 
-        LogMsgf(ERROR, "SDL_RenderGeometry failed to render minimap. SDL_ERROR:%s\n", SDL_GetError());
-
-    free(vertices);
-}
-
 
 /// @brief forms vertices to use for SDL_RenderGeometry for rendering a circle from a texture to a circle on screen
 /// @param vertices pointer to vertex array. result will be stored here. if it points to already allocated memory, it frees that memory

@@ -11,9 +11,6 @@
 void R_ResetDepthBuffer(renderer_t* render);
 
 /* PUBLIC FUNCTIONS*/
-
-
-
 renderer_t R_CreateRenderer(window_t* parentWindow)
 {
     if(!parentWindow)

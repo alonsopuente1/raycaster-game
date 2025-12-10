@@ -1,6 +1,17 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+ #define max(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a > _b ? _a : _b; })
+
+#define min(a,b) \
+   ({ __typeof__ (a) _a = (a); \
+       __typeof__ (b) _b = (b); \
+     _a < _b ? _a : _b; })
+
+
 // goes through each element of the array and frees it
 // finally frees the array itself
 // ARRAY IS INVALID AFTER CALL TO THIS FUNCTION

@@ -4,6 +4,8 @@
 #include "util.h"
 #include "logger.h"
 #include "s_gameevents.h"
+#include "fonts.h"
+#include "r_draw.h"
 
 
 void MMS_SetupScene(void* scene, maingame_t* game)
@@ -75,6 +77,9 @@ void MMS_SetupScene(void* scene, maingame_t* game)
         mmScene->mapFileButtons[i] = W_CreateButton(&mmScene->render, rect, (SDL_Color){0, 0, 0, 100});
         W_SetButtonText(&mmScene->mapFileButtons[i], fileName);
     }
+
+    texture_t* mapSelectText = F_CreateText(&mmScene->render, (SDL_Color){255, 255, 255, 255}, fonts[0], "Map Select");
+    T_SetTextureName(mapSelectText, "mapselect");
 }
 
 void MMS_HandleEvents(void* scene, maingame_t* game, SDL_Event* event)
@@ -227,12 +232,25 @@ void MMS_Draw(void* scene, maingame_t* game)
     }
     case MAPCHOOSE:
     {
+        // draw buttons
         int iterations = mmScene->numMapFiles > 10 ? 10 : mmScene->numMapFiles;
         for(int i = 0; i < iterations; i++)
         {
             W_DrawButton(&mmScene->mapFileButtons[i]);
         }
         W_DrawButton(&mmScene->backButton);
+        
+        // draw map select text
+
+        texture_t* mapSelectText = TB_FindTextureByName(&mmScene->render.textureBank, "mapselect");
+        
+        int dstWidth = mapSelectText->width * 10,
+            dstHeight = mapSelectText->height * 10;
+
+        R_RenderTexture(&mmScene->render, 
+                        mapSelectText, 
+                        (SDL_Rect){0, 0, mapSelectText->width, mapSelectText->height},
+                        (SDL_Rect){game->window.width / 2 - dstWidth / 2, 10, dstWidth, dstHeight});
     }
     }
     

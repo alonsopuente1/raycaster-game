@@ -7,14 +7,6 @@
 #include "util.h"
 #include "logger.h"
 
-extern window_t gMainWindow;
-
-texture_t* gTextures;
-
-extern int NUMTEXTURES;
-
-
-
 texture_t T_LoadTexture(window_t* window, const char* path)
 {
     texture_t tex;
@@ -49,6 +41,21 @@ texture_t T_CreateBlankTexture(window_t* window, const char* name, int width, in
     strncpy(tex.name, name, 32);
     tex.name[sizeof(tex.name) - 1] = '\0';
     return tex;
+}
+
+bool T_SetTextureName(texture_t* tex, const char* name)
+{
+    if(!tex)
+    {
+        LogMsg(ERROR, "passed null ptr to tex\n");
+        return false;
+    }
+
+    strncpy(tex->name, name, sizeof(tex->name) - 1);
+    int nullTermIndex = min(strlen(name), sizeof(tex->name) - 1);
+    tex->name[nullTermIndex] = '\0';
+
+    return true;
 }
 
 void T_FreeTexture(texture_t* tex)
