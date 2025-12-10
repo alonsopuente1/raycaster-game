@@ -20,7 +20,7 @@ void MMS_SetupScene(void* scene, maingame_t* game)
         return;
     }
     memset(scene, 0, sizeof(mainMenuScene_t));
-
+    
     mainMenuScene_t* mmScene = (mainMenuScene_t*)scene;
 
     mmScene->render = R_CreateRenderer(&game->window);
@@ -52,6 +52,8 @@ void MMS_SetupScene(void* scene, maingame_t* game)
     mmScene->mapFiles = GetAllFilesInDir("./res/maps/*.sdm", &mmScene->numMapFiles);
 #elif defined(__linux__)
     mmScene->mapFiles = GetAllFilesInDir("./res/maps", &mmScene->numMapFiles);
+#else
+    #error "macOS not supported"
 #endif
     
     mmScene->mapFileButtons = calloc(mmScene->numMapFiles, sizeof(winButton_t));

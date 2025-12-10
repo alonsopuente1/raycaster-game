@@ -89,7 +89,7 @@ void R_DestroyRenderer(renderer_t* render)
 /* PRIVATE FUNCTIONS */
 
 // since its a private function, render and render->depthBuffer 
-// is guaranteed to be non-null
+// are guaranteed to be non-null
 void R_ResetDepthBuffer(renderer_t* render)
 {
     for(int i = 0; i < render->depthBufferCount; i++)
