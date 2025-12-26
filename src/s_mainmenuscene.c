@@ -48,6 +48,11 @@ void MMS_SetupScene(void* scene, maingame_t* game)
     MMS_RefreshMapList(mmScene, game);
     
     mmScene->mapFileButtons = calloc(mmScene->numMapFiles, sizeof(winButton_t));
+    if(!mmScene->mapFileButtons)
+    {
+        LogMsg(ERROR, "no memory");
+        exit(-1);
+    }
 
     int backButtonWidth = 100;
     int backButtonHeight = 100;
@@ -157,7 +162,7 @@ void MMS_HandleEvents(void* scene, maingame_t* game, SDL_Event* event)
                     if(!event.user.data1)
                     {
                         LogMsg(ERROR, "failed to allocate memory for loading map\n");
-                        break;
+                        exit(-1);
                     }
                     memcpy(event.user.data1, mmScene->mapFiles[i], strlen(mmScene->mapFiles[i]));
                     if(SDL_PushEvent(&event) <= 0)

@@ -29,6 +29,12 @@ texture_t T_LoadTexture(window_t* window, const char* path)
 texture_t T_CreateBlankTexture(window_t* window, const char* name, int width, int height)
 {
     texture_t tex = {0};
+    if(!window || !window->sdlRenderer)
+    {
+        LogMsg(ERROR, "passed null ptr to window or pass window without renderer created");
+        return tex;
+    }
+
     tex.width = width;
     tex.height = height;
     tex.data = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, width, height);
@@ -58,14 +64,19 @@ bool T_SetTextureName(texture_t* tex, const char* name)
     return true;
 }
 
+
 void T_FreeTexture(texture_t* tex)
 {
     if(!tex)
         return;
         
     if(tex->data)
+    {
         SDL_DestroyTexture(tex->data);
-    tex->data = NULL;
+        tex->data = NULL;
+    }
+
     tex->width = 0;
     tex->height = 0;
+    memset(tex->name, 0, sizeof(tex->name));
 }

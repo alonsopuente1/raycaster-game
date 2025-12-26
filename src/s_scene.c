@@ -34,7 +34,7 @@ scene_t S_CreateScene(maingame_t* parentGame, void* scene, unsigned int size, co
     if(!newScene.data)
     {
         LogMsg(ERROR, "failed to allocate memory for scene\n");
-        return (scene_t){0};
+        exit(-1);
     }
 
     memcpy(newScene.data, scene, size);

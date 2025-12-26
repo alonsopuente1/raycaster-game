@@ -48,16 +48,12 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
     map->filePath = malloc(strlen(filePath) + 1);
     if(!map->filePath)
     {
-        SetError("Failed to allocate memory for map file path");
-        CLEANUP();
-        return;
+        LogMsg(ERROR, "no memory");
+        exit(-1);
     }
     strncpy(map->filePath, filePath, strlen(filePath));
     map->filePath[strlen(filePath)] = '\0';
     
-    printf("%s\n", map->filePath);
-
-
     int lineNum = 0;
     while(!feof(file))
     {
@@ -91,9 +87,8 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             map->mapData = malloc(sizeof(int) * map->mapWidth * map->mapHeight);
             if(!map->mapData)
             {
-                SetErrorf("Failed to allocate memory for map data (%d x %d) in map file %s", map->mapWidth, map->mapHeight, filePath);
-                CLEANUP();
-                return;
+                ShowMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "no memory");
+                exit(-1);
             }
 
             // debug info
@@ -204,7 +199,7 @@ bool M_FillMapData(map_t* map, FILE* file)
     if (!buffer)
     {
         LogMsg(ERROR, "Failed to allocate memory for reading map data buffer\n");
-        return false;
+        exit(-1);
     }
     
     if(map->mapData == NULL)
@@ -213,8 +208,6 @@ bool M_FillMapData(map_t* map, FILE* file)
         free(buffer);
         return false;
     }
-
-    printf("%s\n", map->filePath);
 
     int y = 0;
     while(y < map->mapHeight && !feof(file))
@@ -381,7 +374,7 @@ int M_GetMapCell(map_t* map, int index)
 {
     if(!map || !map->mapData)
     {
-        LogMsg(WARN, "Passing null or uninitialised map to M_GetMapCell()\n");
+        LogMsg(WARN, "Passed null or uninitialised map\n");
         return -1;
     }
 

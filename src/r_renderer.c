@@ -28,7 +28,7 @@ renderer_t R_CreateRenderer(window_t* parentWindow)
     if(!output.depthBuffer)
     {
         LogMsg(ERROR, "could not allocate memory for the depth buffer\n");
-        return (renderer_t) { 0 };
+        exit(-1);
     }
     
     for(int i = 0; i < output.depthBufferCount; i++)

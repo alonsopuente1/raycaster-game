@@ -348,7 +348,6 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t
     texture_t* minimapTex = TB_FindTextureByName(texturebank, "MINIMAP"), *playerTex = TB_FindTextureByName(texturebank, "player");
     if(!minimapTex)
     {
-        LogMsg(ERROR, "Failed to find target minimap texture. did you forget to add a blank texture called 'MINIMAP' to game texturebank?\n");
         return NULL;
     }
     
@@ -363,6 +362,9 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t
     SDL_SetRenderDrawColor(window->sdlRenderer, 0, 0, 0, 255);
     SDL_RenderClear(window->sdlRenderer);
 
+    // temp cell for drawing walls onto the minimap
+    // it is done this way because you cant render a rotated rect
+    // WITHOUT a texture :(
     SDL_Texture* cell = SDL_CreateTexture(window->sdlRenderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, 1, 1);
 
     SDL_SetRenderTarget(window->sdlRenderer, cell);
@@ -495,17 +497,10 @@ bool R_DebugMinimap(renderer_t* render, map_t* map, player_t* player, entitymana
     texture_t* dbgMinimapTex = TB_FindTextureByName(&render->textureBank, "debugMinimap");
     if(!dbgMinimapTex)
     {
-        dbgMinimapTex = TB_AddEmptyTexture(&render->textureBank);
+        dbgMinimapTex = TB_AddAndCreateEmptyTexture(&render->textureBank, render->parentWindow, "debugMinimap", 256, 256);
         if(!dbgMinimapTex)
         {
             LogMsg(ERROR, "failed to create debugMinimap texture\n");
-            return false;
-        }
-
-        *dbgMinimapTex = T_CreateBlankTexture(render->parentWindow, "debugMinimap", 256, 256);
-        if(!dbgMinimapTex->data)
-        {
-            LogMsg(ERROR, "failed to create blank texture for debugMinimap\n");
             return false;
         }
     }
@@ -558,6 +553,8 @@ bool R_DebugMinimap(renderer_t* render, map_t* map, player_t* player, entitymana
         }
     }
 
+    SDL_SetRenderTarget(render->parentWindow->sdlRenderer, NULL);
+
     return true;
 }
 
@@ -603,7 +600,7 @@ void R_FormVerticesForCircleFromTexture(SDL_Vertex** vertices, int* pNumVertices
     if(!*vertices)
     {
         LogMsg(ERROR, "failed to allocate memory for result vertices array\n");
-        return;
+        exit(-1);
     }
     
     const int numVertices = numTriangles * 3;

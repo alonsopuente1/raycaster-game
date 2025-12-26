@@ -26,6 +26,7 @@ void FontInit()
     }
 }
 
+extern texture_t* TB_AddEmptyTexture(texturebank_t* texturebank);
 texture_t* F_CreateText(renderer_t* renderer, SDL_Color colour, TTF_Font* font, const char* text)
 {
     if(!renderer)

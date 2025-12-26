@@ -60,18 +60,10 @@ void GS_SetupScene(void* scene, maingame_t* game)
         }
     }    
     /* MINIMAP TEXTURE CREATE */
-    texture_t* texture = TB_AddEmptyTexture(&gScene->renderer.textureBank);
+    texture_t* texture = TB_AddAndCreateEmptyTexture(&gScene->renderer.textureBank, gScene->renderer.parentWindow, "MINIMAP", 256, 256);
     if(!texture)
     {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to add empty texture to texture bank for minimap!", NULL);
-        G_ChangeScene(game, "MainMenu");
-        return;
-    }
-
-    *texture = T_CreateBlankTexture(gScene->renderer.parentWindow, "MINIMAP", 256, 256);
-    if(!texture->data)
-    {
-        ShowMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to add empty texture for minimap!");
+        ShowMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to add empty texture to texture bank for minimap!");
         G_ChangeScene(game, "MainMenu");
         return;
     }
@@ -134,6 +126,20 @@ void GS_HandleEvents(void* scene, maingame_t* game, SDL_Event* e)
     if(e->type == SDL_USEREVENT)
         GS_HandleUserEvent(scene, game, e);
     
+    if(e->type == SDL_KEYDOWN)
+    {
+        switch(e->key.keysym.scancode)
+        {
+        case SDL_SCANCODE_F1:
+        {
+            if(!e->key.repeat)
+            {
+                gScene->debugMinimapToggle = !gScene->debugMinimapToggle;
+            }
+        }
+        }
+    }
+
     
     // will never return null since sdl is initialised
     const Uint8* keys = SDL_GetKeyboardState(NULL);
@@ -225,15 +231,19 @@ void GS_Draw(void* scene, maingame_t* game)
     }
 
     R_RenderPlayerGun(render, &gScene->player);
-    R_RenderMinimap(render, &gScene->player, &gScene->entityManager, &gScene->map);
+    // R_RenderMinimap(render, &gScene->player, &gScene->entityManager, &gScene->map);
 
     // DEBUG
-    R_DebugMinimap(render, &gScene->map, &gScene->player, &gScene->entityManager);
+    !R_DebugMinimap(render, &gScene->map, &gScene->player, &gScene->entityManager);
     
-    texture_t* minimapTex = TB_FindTextureByName(&gScene->renderer.textureBank, "debugMinimap");
-    if(minimapTex)
+
+    if(gScene->debugMinimapToggle)
     {
-        R_RenderTexture(render, minimapTex, (SDL_Rect){0, 0, minimapTex->width, minimapTex->height}, (SDL_Rect){0, 0, 128, 128});
+        texture_t* minimapTex = TB_FindTextureByName(&gScene->renderer.textureBank, "debugMinimap");
+        if(minimapTex)
+        {
+            R_RenderTexture(render, minimapTex, (SDL_Rect){0, 0, minimapTex->width, minimapTex->height}, (SDL_Rect){0, 0, gScene->renderer.parentWindow->width, gScene->renderer.parentWindow->height});
+        }
     }
 
     R_Present(render);

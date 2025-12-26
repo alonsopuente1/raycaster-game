@@ -29,6 +29,8 @@ typedef struct gamescene_s
 
     entitymanager_t     entityManager;
 
+    bool                debugMinimapToggle;
+
     renderer_t          renderer;
 } gamescene_t;
 #pragma pack(pop)

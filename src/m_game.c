@@ -115,8 +115,7 @@ bool G_AddScene(maingame_t* game, void* scene, unsigned int size, const char* sc
     if(!newScenesArray)
     {
         LogMsg(ERROR, "failed to realloc scenes array to add new scene\n");
-        S_DestroyScene(&newScene);
-        return false;
+        exit(-1);
     }
 
     game->scenes = newScenesArray;
@@ -150,7 +149,7 @@ void G_AddSceneExisting(maingame_t* game, scene_t* scene)
     if(!newScenesArray)
     {
         LogMsg(ERROR, "failed to realloc scenes array to add new scene\n");
-        return;
+        exit(-1);
     }
 
     game->scenes = newScenesArray;

@@ -20,6 +20,7 @@ extern texture_t T_LoadTexture(window_t* window, const char* path);
 // returns texture with texture_t.data == NULL on failure, not NULL on success
 extern texture_t T_CreateBlankTexture(window_t* window, const char* name, int width, int height);
 extern bool T_SetTextureName(texture_t* tex, const char* name);
+// safe to pass null or texture with null data
 extern void T_FreeTexture(texture_t* tex);
 
 #endif 

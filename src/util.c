@@ -191,9 +191,7 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
         if(!newPtr)
         {
             LogMsg(ERROR, "failed to allocate more memory for list of files\n");
-            FreeDynamicArrayOfAllocatedElements((void**)output, filesFound);
-            output = NULL;
-            break;
+            exit(-1);
         }
         
         output = newPtr;
@@ -206,8 +204,7 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
         if(!output[filesFound])
         {
             LogMsgf(ERROR, "failed to allocate memory for file path. skipping file '%s'\n", ent->d_name);
-            output = realloc(output, sizeof(char*) * filesFound); // safe to continue without checking since realloc earlier mustve succeeded and here we're only shrinking the memory block allocated
-            continue;
+            exit(-1);
         }
 
         strncpy(output[filesFound], fullPath, strlen(fullPath));
