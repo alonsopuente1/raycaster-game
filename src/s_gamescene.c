@@ -7,6 +7,7 @@
 #include "m_game.h"
 #include "w_window.h"
 #include "e_cacodemon.h"
+#include "util.h"
 
 #include "logger.h"
 
@@ -70,7 +71,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
     *texture = T_CreateBlankTexture(gScene->renderer.parentWindow, "MINIMAP", 256, 256);
     if(!texture->data)
     {
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to add empty texture for minimap!", NULL);
+        ShowMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to add empty texture for minimap!");
         G_ChangeScene(game, "MainMenu");
         return;
     }
@@ -102,9 +103,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
     gScene->footstep1 = Mix_LoadWAV("res/sound/footsteps/1.wav");
     if(!gScene->footstep1)
     {
-        char msgBuffer[256] = {0};
-        snprintf(msgBuffer, sizeof(msgBuffer), "Failed to load footstep sound! MIX_ERROR: %s", Mix_GetError());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", msgBuffer, NULL);
+        ShowMessageBoxf(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to load footstep sound! MIX_ERROR: %s", Mix_GetError());
         G_ChangeScene(game, "MainMenu");
         return;
     }
@@ -114,9 +113,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
     gScene->footstep2 = Mix_LoadWAV("res/sound/footsteps/2.wav");
     if(!gScene->footstep2)
     {
-        char msgBuffer[256] = {0};
-        snprintf(msgBuffer, sizeof(msgBuffer), "Failed to load footstep sound! MIX_ERROR: %s", Mix_GetError());
-        SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Error!", msgBuffer, NULL);
+        ShowMessageBoxf(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to load footstep sound! MIX_ERROR: %s", Mix_GetError());
         G_ChangeScene(game, "MainMenu");
         return;
     }
@@ -205,6 +202,8 @@ void GS_Update(void* scene, maingame_t* game, float dt)
         sound ? Mix_PlayChannel(-1, gScene->footstep1, 0) : Mix_PlayChannel(-1, gScene->footstep2, 0);
         sound = !sound;
     }
+
+    R_UpdateMinimap(&gScene->renderer, &gScene->player, &gScene->entityManager, &gScene->map);
 }
 
 void GS_Draw(void* scene, maingame_t* game)
@@ -228,6 +227,14 @@ void GS_Draw(void* scene, maingame_t* game)
     R_RenderPlayerGun(render, &gScene->player);
     R_RenderMinimap(render, &gScene->player, &gScene->entityManager, &gScene->map);
 
+    // DEBUG
+    R_DebugMinimap(render, &gScene->map, &gScene->player, &gScene->entityManager);
+    
+    texture_t* minimapTex = TB_FindTextureByName(&gScene->renderer.textureBank, "debugMinimap");
+    if(minimapTex)
+    {
+        R_RenderTexture(render, minimapTex, (SDL_Rect){0, 0, minimapTex->width, minimapTex->height}, (SDL_Rect){0, 0, 128, 128});
+    }
 
     R_Present(render);
 }
@@ -249,7 +256,9 @@ void GS_DestroyScene(void* scene, maingame_t* game)
 /* PRIVATE FUNCTIONS */
 void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e)
 {
-    if(!e || e->user.type != SDL_USEREVENT)
+    if(!e)
+        return;
+    if(e->user.type != SDL_USEREVENT)
         return;
 
     gamescene_t* gScene = (gamescene_t*)scene;
@@ -259,14 +268,28 @@ void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e)
     case EVENT_LOADMAP:
     {
         maploadargs_t mapArgs = { 0 };
-        M_LoadMap(&gScene->map, &mapArgs, e->user.data1);
+        
+        char filePath[256] = { 0 };
         if(e->user.data1)
+        {
+            strncpy(filePath, (char*)e->user.data1, sizeof(filePath) - 1);
             free(e->user.data1);
+            e->user.data1 = NULL;
+        }
+
+        M_LoadMap(&gScene->map, &mapArgs, filePath);
         
         if(!mapArgs.success)
         {
-            LogMsgf(ERROR, "failed to load map at file path '%s'\n", (char*)e->user.data1);
+            LogMsgf(ERROR, "failed to load map at file path '%s'\n", filePath);
+
+            char filename[32] = { 0 };
+            fileNameFromPath(filePath, filename, sizeof(filename));
+
+            ShowMessageBoxf(SDL_MESSAGEBOX_ERROR, "Error!", "Failed to load map '%s'\nError: %s", filename, GetError());
+
             G_ChangeScene(game, "MainMenu");
+
             return;
         }
 

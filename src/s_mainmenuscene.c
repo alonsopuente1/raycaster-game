@@ -7,20 +7,15 @@
 #include "fonts.h"
 #include "r_draw.h"
 
+/* FORWARD DECLERATIONS */
+
+void MMS_RefreshMapList(mainMenuScene_t* scene, maingame_t* game);
+
+/* PUBLIC FUNCTIONS*/
 
 void MMS_SetupScene(void* scene, maingame_t* game)
 {
-    if(!scene)
-    {
-        LogMsg(ERROR, "passed null ptr to scene, something is very wrong\n");
-        return;
-    }
-
-    if(!game)
-    {
-        LogMsg(ERROR, "passed null ptr to game, something is very wrong\n");
-        return;
-    }
+    SDL_assert(scene != NULL && game != NULL);
     memset(scene, 0, sizeof(mainMenuScene_t));
     
     mainMenuScene_t* mmScene = (mainMenuScene_t*)scene;
@@ -50,13 +45,7 @@ void MMS_SetupScene(void* scene, maingame_t* game)
     W_SetButtonText(&mmScene->startButton, "Play");
     W_SetButtonText(&mmScene->exitButton, "Quit");
 
-#ifdef _WIN32
-    mmScene->mapFiles = GetAllFilesInDir("./res/maps/*.sdm", &mmScene->numMapFiles);
-#elif defined(__linux__)
-    mmScene->mapFiles = GetAllFilesInDir("./res/maps", &mmScene->numMapFiles);
-#else
-    #error "macOS not supported"
-#endif
+    MMS_RefreshMapList(mmScene, game);
     
     mmScene->mapFileButtons = calloc(mmScene->numMapFiles, sizeof(winButton_t));
 
@@ -135,6 +124,7 @@ void MMS_HandleEvents(void* scene, maingame_t* game, SDL_Event* event)
             {
                 LogMsg(INFO, "Start button clicked\n");
                 mmScene->state = MAPCHOOSE;
+                MMS_RefreshMapList(mmScene, game);
                 return;
             }
             else if(SDL_PointInRect(&mousePos, &mmScene->exitButton.rect))
@@ -286,4 +276,33 @@ void MMS_Destroy(void* scene, maingame_t* game)
     }
 
     R_DestroyRenderer(&mmScene->render);
+}
+
+/* PRIVATE FUNCTIONS */
+
+// since this function is only used inside scene code
+// its safe to assume scene and game aren't null
+void MMS_RefreshMapList(mainMenuScene_t* scene, maingame_t* game)
+{
+    if(scene->mapFiles)
+    {
+        FreeDynamicArrayOfAllocatedElements(scene->mapFiles, scene->numMapFiles);
+        scene->mapFiles = NULL;
+    }
+
+// for the linux version of the function, only the directory to the folder must be passed
+// wildcards are not supported
+#ifdef _WIN32
+    scene->mapFiles = GetAllFilesInDir("./res/maps/*.sdm", &scene->numMapFiles);
+#elif defined(__linux__)
+    scene->mapFiles = GetAllFilesInDir("./res/maps", &scene->numMapFiles);
+#else
+    #error "macOS not supported"
+#endif
+    
+    
+
+    if(!scene->mapFiles)
+    {
+    }
 }

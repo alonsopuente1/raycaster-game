@@ -88,8 +88,6 @@ void G_Destroy(maingame_t* game)
     
     game->running = false;
 
-    FreeLogs();
-
     FontCleanup();
     TTF_Quit();
     Mix_Quit();
@@ -203,8 +201,8 @@ bool G_InitLibs()
     }
     if(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0)
     {
-        return false;
         LogMsgf(ERROR, "Failed to init SDL2. SDL_ERROR: %s\n\tGetting out of here...\n", SDL_GetError());
+        return false;
     }
     if(Mix_Init(MIX_INIT_MP3 | MIX_INIT_WAVPACK) == 0)
     {
@@ -233,6 +231,7 @@ bool G_InitWindow(maingame_t* game)
         return false;
     }
     LogMsg(INFO, "Main window initialised successfully\n");
+
 
     return true;
 }

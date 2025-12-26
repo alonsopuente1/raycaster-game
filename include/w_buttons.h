@@ -8,10 +8,12 @@ typedef struct texture_s texture_t;
 
 typedef struct winButton_s
 {
-
+    // position and size of the button on screen
     SDL_Rect    rect;
-    SDL_Color   backgroundColor;
 
+    // colour of background
+    SDL_Color   backgroundColor;
+    
     texture_t*  text;
 
     renderer_t* parentRenderer;

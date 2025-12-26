@@ -33,7 +33,7 @@ texture_t* TB_AddEmptyTexture(texturebank_t* texturebank)
     if(!destination)
     {
         LogMsg(ERROR, "failed to allocate memory for empty texture\n");
-        return NULL;
+        exit(-1);
     }
 
     return &(*destination)->data;

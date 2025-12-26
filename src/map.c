@@ -6,6 +6,8 @@
 #include "v_funcs.h"
 
 #include <stdbool.h>
+#include <float.h>
+#include <fcntl.h>
 
 bool M_FillMapData(map_t* map, FILE* file);
 
@@ -25,9 +27,10 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
         LogMsg(WARN, "passed null ptr to mapArgs\n");
         return;
     }
+    
 
-    FILE*       file;
-    char        buffer[1024];
+    FILE*       file = NULL;
+    char        buffer[1024] = { 0 };
     
     file = fopen(filePath, "r");
     
@@ -35,28 +38,31 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
     
     if(!file)
     {
-        LogMsgf(ERROR, "Failed to open map file: %s\n", filePath);
+        SetErrorf("Failed to open map file: %s", filePath);
         return;
     }
+
+    M_Free(map);
     
     map->filePath = malloc(strlen(filePath) + 1);
     if(!map->filePath)
     {
-        LogMsg(ERROR, "Failed to allocate memory for map file path\n");
+        SetError("Failed to allocate memory for map file path");
         CLEANUP();
         return;
     }
     strncpy(map->filePath, filePath, strlen(filePath));
     map->filePath[strlen(filePath)] = '\0';
     
-    M_Free(map);
+    printf("%s\n", map->filePath);
 
+    
     while(!feof(file))
     {
-        memset(buffer, 0, 1024);
-        fgets(buffer, 1024, file);
+        memset(buffer, 0, sizeof(buffer));
+        fgets(buffer, sizeof(buffer), file);
         
-        if(buffer[0] == '#' || buffer[0] == '\n' || buffer[0] == '\r')
+        if(buffer[0] == '#' || buffer[0] == '\n' || buffer[0] == '\r' || strlen(buffer) == 0)
         continue;
         
         char* token = strtok(buffer, " \t\n\r");
@@ -73,7 +79,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             map->mapHeight = atoi(strtok(NULL, " \t\n\r"));
             if(map->mapWidth <= 0 || map->mapHeight <= 0)
             {
-                LogMsgf(ERROR, "Invalid map dimensions in map file %s\n", filePath);
+                SetErrorf("Invalid map dimensions in map file '%s'", filePath);
                 CLEANUP();
                 return;
             }
@@ -82,7 +88,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             map->mapData = malloc(sizeof(int) * map->mapWidth * map->mapHeight);
             if(!map->mapData)
             {
-                LogMsgf(ERROR, "Failed to allocate memory for map data (%d x %d) in map file %s\n", map->mapWidth, map->mapHeight, filePath);
+                SetErrorf("Failed to allocate memory for map data (%d x %d) in map file %s", map->mapWidth, map->mapHeight, filePath);
                 CLEANUP();
                 return;
             }
@@ -98,7 +104,6 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
         {
             if(!M_FillMapData(map, file))
             {
-                LogMsgf(ERROR, "Failed to read map data in map file %s\n", filePath);
                 CLEANUP();
                 return;
             }
@@ -114,7 +119,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             float x = atof(strtok(NULL, " \t\n\r")) , y = atof(strtok(NULL, " \t\n\r"));
             if(x == 0 || y == 0)
             {
-                LogMsg(ERROR, "failed to load playerstart co-ords\n");
+                SetError("failed to load playerstart co-ords\n");
                 CLEANUP();
                 return;
             }
@@ -128,7 +133,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             float maxSpeed = atof(strtok(NULL, " \t\n\r"));
             if(maxSpeed == 0.0f)
             {
-                LogMsg(ERROR, "failed to load maxSpeed for player");
+                SetError("failed to load maxSpeed for player");
                 CLEANUP();
                 return;
             }
@@ -142,7 +147,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
         {
             float rotateSpeed = atof(strtok(NULL, " \t\n\r"));
             if(rotateSpeed == 0.0f)
-                LogMsg(WARN, "playerrotatespeed not set, defaulting to 0.1...\n");
+                LogMsg(INFO, "playerrotatespeed not set, defaulting to 0.1...\n");
 
             mapArgs->rotateSpeed = rotateSpeed;
             continue;
@@ -157,6 +162,16 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
     }
 
     fclose(file);
+
+    // check for signs of an actually created map
+    // if not created, set error, mark failure and return;
+    if(!map->filePath || !map->mapData || map->mapHeight == 0 || map->mapWidth == 0)
+    {
+        SetError("Unkkown error while creating map!\nDoes the map file actually have data in it?");
+        mapArgs->success = false;
+        return;
+    }
+
     mapArgs->success = true;
 
     if(mapArgs->rotateSpeed == 0.0f)
@@ -167,6 +182,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
     return;
 }
 
+// sets error on fail
 // doesn't handle freeing of map file path, map data or of file closing
 bool M_FillMapData(map_t* map, FILE* file)
 {
@@ -186,30 +202,31 @@ bool M_FillMapData(map_t* map, FILE* file)
         return false;
     }
 
+    printf("%s\n", map->filePath);
+
     int y = 0;
     while(y < map->mapHeight && !feof(file))
     {
         fgets(buffer, map->mapWidth + 2, file);
 
-        if(buffer[0] == '#' || buffer[0] == '\n' || buffer[0] == '\r')
-            continue;
+        char* sanitised = strtok(buffer, " \n\r\t");
 
-        if((int)strlen(buffer) < map->mapWidth)
+        if((int)strlen(sanitised) != map->mapWidth)
         {
-            LogMsgf(ERROR, "Map data row %d is too short in map file %s\n", y, map->filePath);
+            SetErrorf("Map width doesnt match dimensions set in map file %s\n", map->filePath);
             free(buffer);
             return false;
         }
 
         for(int x = 0; x < map->mapWidth; x++)
         {
-            if(buffer[x] < '0' || buffer[x] > '9')
+            if(sanitised[x] < '0' || sanitised[x] > '9')
             {
-                LogMsgf(ERROR, "Invalid character '%c' in map data at row %d column %d in map file %s\n", buffer[x], y, x, map->filePath);
+                SetErrorf("Invalid character '%c' in map data at row %d column %d in map file %s\n", buffer[x], y, x, map->filePath);
                 free(buffer);
                 return false;
             }
-            map->mapData[y * map->mapWidth + x] = buffer[x] - '0';
+            map->mapData[y * map->mapWidth + x] = sanitised[x] - '0';
         }
 
         y++;
@@ -217,13 +234,121 @@ bool M_FillMapData(map_t* map, FILE* file)
     
     if(y < map->mapHeight)
     {
-        LogMsgf(ERROR, "Not enough rows of map data in map file %s\n", map->filePath);
+        SetErrorf("Not enough rows of map data in map file %s\n", map->filePath);
         free(buffer);
         return false;
     }
 
     free(buffer);
     return true;
+}
+
+bool M_RayCollision(map_t* map, vertex2d_t rayOrigin, vertex2d_t rayDir, RayHitDesc* outSide, vertex2d_t* outPointOfCollision)
+{
+    if(!map)
+    {
+        LogMsg(ERROR, "passed null ptr to map\n");
+        return false;
+    }
+
+    if(outSide)
+        *outSide = RAY_HIT_NONE;
+
+    int mapX = (int)rayOrigin.x;
+    int mapY = (int)rayOrigin.y;
+
+    vertex2d_t sideDist;
+
+    vertex2d_t deltaDist;
+    deltaDist.x = (rayDir.x == 0) ? FLT_MAX : fabs(1 / rayDir.x);
+    deltaDist.y = (rayDir.y == 0) ? FLT_MAX : fabs(1 / rayDir.y);
+    float wallDist;
+
+    int stepX;
+    int stepY;
+
+    int hit = 0;
+    int side;
+
+    if(rayDir.x < 0)
+    {
+        stepX = -1;
+        sideDist.x = (rayOrigin.x - mapX) * deltaDist.x;
+    }
+    else
+    {
+        stepX = 1;
+        sideDist.x = (mapX + 1.0f - rayOrigin.x) * deltaDist.x;
+    }
+
+    if(rayDir.y < 0)
+    {
+        stepY = -1;
+        sideDist.y = (rayOrigin.y - mapY) * deltaDist.y;
+    }
+    else
+    {
+        stepY = 1;
+        sideDist.y = (mapY + 1.0f - rayOrigin.y) * deltaDist.y;
+    }
+        
+    while(true)
+    {
+        // checking VERTICAL lines
+        if(sideDist.x < sideDist.y)
+        {
+            sideDist.x += deltaDist.x;
+            mapX += stepX;
+            side = RAY_HIT_VERTICAL;
+        }
+        // checking HORIZONTAL lines
+        else
+        {
+            sideDist.y += deltaDist.y;
+            mapY += stepY;
+            side = RAY_HIT_HORIZONTAL;
+        }
+        if(mapX < 0 || mapX >= map->mapWidth || mapY < 0 || mapY >= map->mapHeight)
+            break;
+
+        if(M_GetMapCell(map, mapY * map->mapHeight + mapX) > 0) hit = 1;
+    }
+
+    wallDist = 0.0f;  
+    if(side == RAY_HIT_HORIZONTAL)  wallDist = sideDist.x;
+    else                            wallDist = sideDist.y;
+
+    // if a wall was hit
+    if(hit == 1)
+    {
+        // set the output parameters
+        if(outSide)
+            *outSide = side;
+
+        if(outPointOfCollision)
+        {
+            vertex2d_t normRayDir = V_Normalise(rayDir);
+
+            outPointOfCollision->x = rayOrigin.x + normRayDir.x * wallDist;
+            outPointOfCollision->y = rayOrigin.y + normRayDir.y * wallDist;
+        }
+
+        return true;
+    }
+    // no wall hit
+    else
+    {
+        if(outSide)
+            *outSide = RAY_HIT_NONE;
+
+        if(outPointOfCollision)
+        {
+            outPointOfCollision->x = 0.0f;
+            outPointOfCollision->y = 0.0f;
+        }
+
+        return false;
+    }
 }
 
 void M_Free(map_t* map)

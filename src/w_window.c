@@ -23,7 +23,7 @@ bool W_InitWindow(window_t* window, const char* title, int width, int height)
         return false;
     }
 
-    window->sdlRenderer = SDL_CreateRenderer(window->sdlWindow, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    window->sdlRenderer = SDL_CreateRenderer(window->sdlWindow, -1, SDL_RENDERER_PRESENTVSYNC);
     if(!window->sdlRenderer)
     {
         LogMsgf(ERROR, "Failed to create renderer for window %s. SDL_ERROR: %s\n", title, SDL_GetError());

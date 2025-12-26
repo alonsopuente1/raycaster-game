@@ -1,6 +1,8 @@
 #include "util.h"
 
 #include "logger.h"
+
+
 #ifdef _WIN32
 #include <Windows.h>
 #elif defined(__linux__)
@@ -134,7 +136,7 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
     *numFiles = filesFound;
     return output;
 }
-#elif defined(__linux__)
+#elif defined(__linux__) // TODO: add wildcards to the search on the linux version to match windows version
 {
     if(!dir)
     {
@@ -211,7 +213,6 @@ char** GetAllFilesInDir(const char* dir, int* numFiles)
         strncpy(output[filesFound], fullPath, strlen(fullPath));
         
         filesFound += 1;
-        LogMsgf(DEBUG, "found file %s\n", fullPath);        
 
         ent = readdir(dDir);
     }
@@ -236,8 +237,12 @@ void fileNameFromPath(const char* path, char* outName, int maxLen)
     }
 
     int charsToCopy = lastDot - lastSlash;
+
     if(charsToCopy >= maxLen)
         charsToCopy = maxLen - 1;
+    if(charsToCopy <= 0)
+        return;
+
     memcpy(outName, lastSlash, charsToCopy);
     outName[charsToCopy] = '\0';
 }

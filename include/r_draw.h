@@ -4,6 +4,8 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
+
+
 typedef struct renderer_s renderer_t;
 typedef struct player_s player_t;
 typedef struct map_s map_t;
@@ -18,5 +20,7 @@ extern bool R_RenderTexture(renderer_t* render, texture_t* tex, SDL_Rect src, SD
 
 // requires a texture called MINIMAP in the texturebank of renderer
 extern void R_RenderMinimap(renderer_t* render, player_t* player, entitymanager_t* em, map_t* map);
+extern texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t* em, map_t* map);
+extern bool R_DebugMinimap(renderer_t* render, map_t* map, player_t* player, entitymanager_t* em);
 
 #endif

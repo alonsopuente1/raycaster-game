@@ -40,3 +40,16 @@ void CACOD_Walk(entity_t* e, float deltaTime)
 
     e->acc = dir;
 }
+
+void CACOD_Attack(entity_t* e, float deltaTime)
+{
+    if(!e)
+    {
+        LogMsg(ERROR, "passed null ptr to entity\n");
+        return;
+    }
+
+    
+
+    return; 
+}

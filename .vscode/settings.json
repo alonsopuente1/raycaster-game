@@ -23,5 +23,12 @@
         "stdbool.h": "c",
         "e_entitymanager.h": "c",
         "dirent.h": "c"
-    }
+    },
+    "makefile.launchConfigurations": [
+        {
+            "cwd": "/home/alonsopuente/Desktop/code/raycaster-game",
+            "binaryPath": "/home/alonsopuente/Desktop/code/raycaster-game/RayCaster",
+            "binaryArgs": []
+        }
+    ]
 }

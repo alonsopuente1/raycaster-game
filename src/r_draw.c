@@ -98,15 +98,17 @@ void R_RenderPlayerView(renderer_t* render, player_t* player, map_t* map)
             stepY = 1;
             sideDist.y = (mapY + 1.0f - player->pos.y) * deltaDist.y;
         }
-
+        
         while(hit == 0)
         {
+            // checking VERTICAL lines
             if(sideDist.x < sideDist.y)
             {
                 sideDist.x += deltaDist.x;
                 mapX += stepX;
                 side = 0;
             }
+            // checking HORIZONTAL lines
             else
             {
                 sideDist.y += deltaDist.y;
@@ -122,8 +124,7 @@ void R_RenderPlayerView(renderer_t* render, player_t* player, map_t* map)
         if(side == 0)   perpWallDist = (sideDist.x - deltaDist.x);
         else            perpWallDist = (sideDist.y - deltaDist.y);
 
-        // this is kinda dangerous, relies on window width being same size as
-        // depth buffer
+        // TODO: resize depth buffer as window resizes
         if(x < render->depthBufferCount && perpWallDist >= render->depthBuffer[x])
         {
             continue;
@@ -171,7 +172,7 @@ void R_RenderPlayerView(renderer_t* render, player_t* player, map_t* map)
         SDL_Rect src = {texX, 0, 1, wallTexture->height};
         SDL_Rect dest = {x, drawStart, 1, lineHeight};        
 
-        SDL_RenderCopy(window->sdlRenderer, wallTexture->data, &src, &dest);
+        R_RenderTexture(render, wallTexture, src, dest);
         if(!side)
         {
             SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_BLEND);
@@ -286,7 +287,7 @@ void R_RenderMinimap(renderer_t* render, player_t* player, entitymanager_t* em, 
     }
 
     window_t*       window = render->parentWindow;
-    texture_t*      minimapTex = R_UpdateMinimap(render, player, em, map);
+    texture_t*      minimapTex = TB_FindTextureByName(&render->textureBank, "MINIMAP");
 
     if(!minimapTex)
     {
@@ -313,38 +314,8 @@ void R_RenderMinimap(renderer_t* render, player_t* player, entitymanager_t* em, 
     free(vertices);
 }
 
-bool R_RenderTexture(renderer_t* render, texture_t* tex, SDL_Rect src, SDL_Rect dst)
-{
-    if(!render)
-    {
-        LogMsg(ERROR, "passed null ptr to renderer\n");
-        return false;
-    }
-
-    if(!tex)
-    {
-        LogMsg(ERROR, "passed null ptr to tex\n");
-        return false;
-    }
-
-    if(!TB_IsTexInTextureBank(&render->textureBank, tex))
-    {
-        LogMsg(WARN, "failed to render texture: texture doesn't belong to the destination renderer");
-        return false;
-    }
-
-    if(SDL_RenderCopy(render->parentWindow->sdlRenderer, tex->data, &src, &dst) < 0)
-    {
-        LogMsgf(WARN, "failed to render texture: SDL_ERROR:%s\n", SDL_GetError());
-        return false;
-    }
-
-    return true;
-}
-
-/* PRIVATE FUNCTIONS */
-
 // updates the minimap texture and returns it if successful
+// renders the map, player and entities to the minimap texture
 texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t* em, map_t* map)
 {
     if(!render)
@@ -439,7 +410,7 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t
     }
     SDL_SetRenderDrawBlendMode(window->sdlRenderer, SDL_BLENDMODE_NONE);
     
-    /* DRAW ENEMIES ON MINIMAP */
+    /* DRAW OTHER ENTITIES ON MINIMAP */
     SDL_SetRenderTarget(window->sdlRenderer, cell);
     SDL_SetRenderDrawColor(window->sdlRenderer, 255, 0, 0, 255);
     SDL_RenderClear(window->sdlRenderer);
@@ -471,6 +442,125 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t
 
     return minimapTex;
 }
+
+bool R_RenderTexture(renderer_t* render, texture_t* tex, SDL_Rect src, SDL_Rect dst)
+{
+    if(!render)
+    {
+        LogMsg(ERROR, "passed null ptr to renderer\n");
+        return false;
+    }
+
+    if(!tex)
+    {
+        LogMsg(ERROR, "passed null ptr to tex\n");
+        return false;
+    }
+
+    if(!TB_IsTexInTextureBank(&render->textureBank, tex))
+    {
+        LogMsg(WARN, "failed to render texture: texture doesn't belong to the destination renderer");
+        return false;
+    }
+
+    if(SDL_RenderCopy(render->parentWindow->sdlRenderer, tex->data, &src, &dst) < 0)
+    {
+        LogMsgf(WARN, "failed to render texture: SDL_ERROR:%s\n", SDL_GetError());
+        return false;
+    }
+
+    return true;
+}
+
+/* PRIVATE FUNCTIONS */
+
+// renders the map to a texture called "debugMinimap" in the renderer's texture bank
+// if the texture doesn't already exist, it gets created and added to the texture bank
+//      with default size of 256x256
+// returns true on success
+bool R_DebugMinimap(renderer_t* render, map_t* map, player_t* player, entitymanager_t* em)
+{
+    if(!render)
+    {
+        LogMsg(ERROR, "passed null ptr to renderer\n");
+        return false;
+    }
+
+    if(!map)
+    {
+        LogMsg(ERROR, "passed null ptr to map\n");
+        return false;
+    }
+
+    texture_t* dbgMinimapTex = TB_FindTextureByName(&render->textureBank, "debugMinimap");
+    if(!dbgMinimapTex)
+    {
+        dbgMinimapTex = TB_AddEmptyTexture(&render->textureBank);
+        if(!dbgMinimapTex)
+        {
+            LogMsg(ERROR, "failed to create debugMinimap texture\n");
+            return false;
+        }
+
+        *dbgMinimapTex = T_CreateBlankTexture(render->parentWindow, "debugMinimap", 256, 256);
+        if(!dbgMinimapTex->data)
+        {
+            LogMsg(ERROR, "failed to create blank texture for debugMinimap\n");
+            return false;
+        }
+    }
+
+    // draw the walls to the minimap texture
+    SDL_SetRenderTarget(render->parentWindow->sdlRenderer, dbgMinimapTex->data);
+    SDL_SetRenderDrawColor(render->parentWindow->sdlRenderer, 0, 0, 0, 255);
+    SDL_RenderClear(render->parentWindow->sdlRenderer);
+
+    int cellWidth = dbgMinimapTex->width / map->mapWidth;
+    int cellHeight = dbgMinimapTex->height / map->mapHeight;
+
+    SDL_SetRenderDrawColor(render->parentWindow->sdlRenderer, 0, 0, 255, 255);
+    for(int i = 0; i < map->mapHeight; i++)
+    {
+        for(int j = 0; j < map->mapWidth; j++)
+        {
+            SDL_Rect cellRect = { j * cellWidth, i * cellHeight, cellWidth, cellHeight };
+
+            if(M_GetMapCell(map, i * map->mapWidth + j) <= 0)
+                continue;
+            
+            SDL_RenderFillRect(render->parentWindow->sdlRenderer, &cellRect);
+        }
+    }
+
+    // if player passed, draw player
+    if(player)
+    {
+        SDL_SetRenderDrawColor(render->parentWindow->sdlRenderer, 0, 255, 0, 255);
+        vertex2d_t playerScreenPos = {
+            player->pos.x * cellWidth,
+            player->pos.y * cellHeight
+        };
+        SDL_RenderDrawRect(render->parentWindow->sdlRenderer, &(SDL_Rect){playerScreenPos.x - 2, playerScreenPos.y - 2, 4, 4});
+    }
+    
+    // if entity manager passed, draw entities
+    if(em)
+    {
+        SDL_SetRenderDrawColor(render->parentWindow->sdlRenderer, 255, 0, 0, 255);
+
+        for(entity_t* e = em->entities; e - em->entities < em->numEntities; e++)
+        {
+            vertex2d_t entityScreenPos = {
+                e->pos.x * cellWidth,
+                e->pos.y * cellHeight
+            };
+            SDL_RenderDrawRect(render->parentWindow->sdlRenderer, &(SDL_Rect){entityScreenPos.x - 2, entityScreenPos.y - 2, 4, 4});
+        }
+    }
+
+    return true;
+}
+
 
 /// @brief forms vertices to use for SDL_RenderGeometry for rendering a circle from a texture to a circle on screen
 /// @param vertices pointer to vertex array. result will be stored here. if it points to already allocated memory, it frees that memory
