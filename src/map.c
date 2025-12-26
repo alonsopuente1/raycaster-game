@@ -14,7 +14,8 @@ bool M_FillMapData(map_t* map, FILE* file);
 void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
 {
     #define CLEANUP()   fclose(file);\
-                        M_Free(map)
+                        M_Free(map);\
+                        memset(mapArgs, sizeof(maploadargs_t), 0)
                         
     if(!map)
     {
@@ -56,9 +57,11 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
     
     printf("%s\n", map->filePath);
 
-    
+
+    int lineNum = 0;
     while(!feof(file))
     {
+        lineNum++;
         memset(buffer, 0, sizeof(buffer));
         fgets(buffer, sizeof(buffer), file);
         
@@ -102,12 +105,14 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
         // read map data
         if(strcmp(token, "mapstart") == 0)
         {
+            // the function sets an error on fail so no need to set the error here
             if(!M_FillMapData(map, file))
             {
                 CLEANUP();
                 return;
             }
-
+            // adjusts for lines skipped by M_FillMapData
+            lineNum += map->mapHeight;
             continue;
         }
 
@@ -125,6 +130,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             }
 
             mapArgs->startPos = V_Make(x, y);
+            continue;
         }
 
         // player max speed var
@@ -159,6 +165,11 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
             LogMsgf(DEBUG, "Reached end of map data in map file %s\n", filePath);
             break;
         }
+
+        // if code execution reached here, the token is unrecognised
+        SetErrorf("Unkown token ('%s') on line %i of map file '%s'", token, lineNum, filePath);
+        CLEANUP();
+        return;
     }
 
     fclose(file);
@@ -167,7 +178,8 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
     // if not created, set error, mark failure and return;
     if(!map->filePath || !map->mapData || map->mapHeight == 0 || map->mapWidth == 0)
     {
-        SetError("Unkkown error while creating map!\nDoes the map file actually have data in it?");
+        SetError("Unknown error while creating map!\nDoes the map file actually have data in it?");
+        CLEANUP();
         mapArgs->success = false;
         return;
     }
