@@ -137,6 +137,8 @@ void GS_HandleEvents(void* scene, maingame_t* game, SDL_Event* e)
                 gScene->debugMinimapToggle = !gScene->debugMinimapToggle;
             }
         }
+        default:
+            break;
         }
     }
 
@@ -221,7 +223,10 @@ void GS_Draw(void* scene, maingame_t* game)
         return;
 
     R_ClearScreen(render, (SDL_Color){0, 0, 0, 255});
-
+    
+    // DEBUG
+    R_DebugMinimap(render, &gScene->map, &gScene->player, &gScene->entityManager);
+    
     R_RenderCeilingAndFloor(render, (SDL_Color){40, 40, 40, 255}, (SDL_Color){60, 60, 60, 255});
     R_RenderPlayerView(render, &gScene->player, &gScene->map);
     
@@ -233,20 +238,14 @@ void GS_Draw(void* scene, maingame_t* game)
     R_RenderPlayerGun(render, &gScene->player);
     // R_RenderMinimap(render, &gScene->player, &gScene->entityManager, &gScene->map);
 
-    // DEBUG
-    !R_DebugMinimap(render, &gScene->map, &gScene->player, &gScene->entityManager);
-    
-
     if(gScene->debugMinimapToggle)
     {
-        texture_t* minimapTex = TB_FindTextureByName(&gScene->renderer.textureBank, "debugMinimap");
-        if(minimapTex)
-        {
-            R_RenderTexture(render, minimapTex, (SDL_Rect){0, 0, minimapTex->width, minimapTex->height}, (SDL_Rect){0, 0, gScene->renderer.parentWindow->width, gScene->renderer.parentWindow->height});
-        }
+        texture_t* debugMinimapTex = TB_FindTextureByName(&render->textureBank, "debugMinimap");
+        R_RenderTexture(render, debugMinimapTex, (SDL_Rect){0, 0, debugMinimapTex->width, debugMinimapTex->height}, (SDL_Rect){0, 0, render->parentWindow->width, render->parentWindow->height});
     }
 
     R_Present(render);
+
 }
 
 void GS_DestroyScene(void* scene, maingame_t* game)

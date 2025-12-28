@@ -24,13 +24,14 @@ void SetError(const char* msg)
     strncpy(errorMsg, msg, logmaxchr - 1);
     errorMsg[logmaxchr - 1] = '\0';
     set = true;
+    bool alsd;
 }
 
 const char* GetError()
 {
     if(set)
     {
-        set = !set;
+        set = false;
         return errorMsg;
     }
     else
@@ -42,4 +43,5 @@ const char* GetError()
 void ClearError()
 {
     memset(errorMsg, 0, sizeof(errorMsg));
+    set = false;
 }

@@ -74,7 +74,7 @@ typedef enum
 extern void _LogMsg(errorLevel lvl, const char* msg, int line, const char* file, const char* function);
 extern void SetError(const char* msg);
 // returns the pointer to internal error message
-// error message 
+// or returns NULL when no error message is set
 extern const char* GetError();
 extern void ClearError();
 

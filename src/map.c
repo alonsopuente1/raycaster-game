@@ -262,18 +262,18 @@ bool M_RayCollision(map_t* map, vertex2d_t rayOrigin, vertex2d_t rayDir, RayHitD
     int mapX = (int)rayOrigin.x;
     int mapY = (int)rayOrigin.y;
 
-    vertex2d_t sideDist;
+    vertex2d_t sideDist = { 0.f };
 
-    vertex2d_t deltaDist;
-    deltaDist.x = (rayDir.x == 0) ? FLT_MAX : fabs(1 / rayDir.x);
-    deltaDist.y = (rayDir.y == 0) ? FLT_MAX : fabs(1 / rayDir.y);
-    float wallDist;
+    vertex2d_t deltaDist = { 0.f };
+    deltaDist.x = (rayDir.x == 0.f) ? FLT_MAX : fabsf(1.f / rayDir.x);
+    deltaDist.y = (rayDir.y == 0.f) ? FLT_MAX : fabsf(1.f / rayDir.y);
+    float wallDist = 0.f;
 
-    int stepX;
-    int stepY;
+    int stepX = 0;
+    int stepY = 0;
 
     int hit = 0;
-    int side;
+    RayHitDesc side = RAY_HIT_NONE;
 
     if(rayDir.x < 0)
     {
@@ -297,7 +297,7 @@ bool M_RayCollision(map_t* map, vertex2d_t rayOrigin, vertex2d_t rayDir, RayHitD
         sideDist.y = (mapY + 1.0f - rayOrigin.y) * deltaDist.y;
     }
         
-    while(true)
+    while(hit == 0)
     {
         // checking VERTICAL lines
         if(sideDist.x < sideDist.y)
@@ -315,14 +315,19 @@ bool M_RayCollision(map_t* map, vertex2d_t rayOrigin, vertex2d_t rayDir, RayHitD
         }
         if(mapX < 0 || mapX >= map->mapWidth || mapY < 0 || mapY >= map->mapHeight)
             break;
-
-        if(M_GetMapCell(map, mapY * map->mapHeight + mapX) > 0) hit = 1;
+        int mapVal = M_GetMapCell(map, mapY * map->mapHeight + mapX);
+        if(mapVal > 0) hit = 1;
+        else if(mapVal < 0) {
+            side = RAY_HIT_NONE;
+            hit = 0;
+            break;
+        }
     }
 
-    wallDist = 0.0f;  
-    if(side == RAY_HIT_HORIZONTAL)  wallDist = sideDist.x;
-    else                            wallDist = sideDist.y;
-
+    wallDist = 0.0f; 
+    if(side == RAY_HIT_HORIZONTAL)      wallDist = sideDist.y - deltaDist.y;
+    else if(side == RAY_HIT_VERTICAL)   wallDist = sideDist.x - deltaDist.x;
+    
     // if a wall was hit
     if(hit == 1)
     {

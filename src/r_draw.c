@@ -553,6 +553,18 @@ bool R_DebugMinimap(renderer_t* render, map_t* map, player_t* player, entitymana
         }
     }
 
+    // ray collision TEST
+
+    RayHitDesc desc;
+    vertex2d_t collision = { 0 };
+    M_RayCollision(map, player->pos, V_AngToVec(player->viewAngle), &desc, &collision);
+
+    if(desc == RAY_HIT_NONE)
+        SDL_SetRenderDrawColor(render->parentWindow->sdlRenderer, 255, 0, 0, 255);
+    else
+        SDL_SetRenderDrawColor(render->parentWindow->sdlRenderer, 255, 255, 0, 255);
+    SDL_RenderDrawLine(render->parentWindow->sdlRenderer, player->pos.x * cellWidth, player->pos.y * cellHeight, collision.x * cellWidth, collision.y * cellHeight);
+    
     SDL_SetRenderTarget(render->parentWindow->sdlRenderer, NULL);
 
     return true;

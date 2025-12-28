@@ -58,10 +58,10 @@ typedef enum
 
 // if it returns false, the output parameters are set to 0
 // if it returns true, the output parameters are set:
-// outSide: pointer to variable to store which side of a wall it hit
+// outSide: pointer to variable to store which side of a wall it hit. can pass null if not needed
 //          0 - horizontal side
 //          1 - vertical side
-// outPointOfCollision: collision of point
+// outPointOfCollision: collision of point. can pass null if not needed
 extern bool M_RayCollision(map_t* map, vertex2d_t rayOrigin, vertex2d_t rayDir, RayHitDesc* outSide, vertex2d_t* outPointOfCollision);
 
 // safe to pass a map with NULL data and/or NULL filePath
