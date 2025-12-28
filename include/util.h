@@ -1,6 +1,12 @@
 #ifndef __UTIL_H__
 #define __UTIL_H__
 
+/* util.h
+
+    contains functions which are for general use
+
+*/
+
  #define max(a,b) \
    ({ __typeof__ (a) _a = (a); \
        __typeof__ (b) _b = (b); \

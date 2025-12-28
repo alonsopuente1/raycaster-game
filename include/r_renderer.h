@@ -3,6 +3,16 @@
 
 #include "texturebank.h"
 
+/* r_renderer.h
+
+    the renderer created is attached to a specific window 
+    and contains the texturebank for that window
+
+    rendering of entities should be done through the renderer
+    as it include depth buffer test. if not you'll have wallhacks
+
+*/
+
 typedef struct window_s window_t;
 
 typedef struct renderer_s

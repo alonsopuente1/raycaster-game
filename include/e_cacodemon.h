@@ -1,6 +1,13 @@
 #ifndef __E_CACODEMON_H__
 #define __E_CACODEMON_H__
 
+/* e_cacodemon.h
+
+    contains the create function and thinker functions for the enemy
+    cacodemon
+
+*/
+
 typedef struct entity_s entity_t;
 
 // creates and returns a cacodemon entity at the given position

@@ -4,6 +4,15 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
+/* texture.h
+
+    contains struct and helper functions for handling textures
+
+    the struct is a wrapper around the SDL_Texture to make texture
+    loading easier
+
+*/
+
 typedef struct texture_s
 {
     int             width;

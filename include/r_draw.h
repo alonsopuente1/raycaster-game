@@ -4,7 +4,11 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
+/* r_draw.h
 
+    contains functions for rendering player view, minimap etc.
+
+*/
 
 typedef struct renderer_s renderer_t;
 typedef struct player_s player_t;

@@ -2,7 +2,6 @@
 
 #include <SDL2/SDL_image.h>
 
-#include "settings.h"
 #include "w_window.h"
 #include "util.h"
 #include "logger.h"

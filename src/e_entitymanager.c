@@ -33,7 +33,7 @@ void EM_UpdateEntities(entitymanager_t* em, float deltaTime, map_t* m)
 {
     for(unsigned int i = 0; i < em->numEntities; i++)
     {
-        E_Update(&em->entities[i], deltaTime, m);
+        E_Update(&em->entities[i], deltaTime);
         if(em->entities[i].markForDeletion)
         {
             EM_RemoveEntity(em, &em->entities[i]);

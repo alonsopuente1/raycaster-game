@@ -9,7 +9,6 @@
 #include "r_draw.h"
 #include "p_funcs.h"
 #include "v_funcs.h"
-#include "settings.h"
 #include "fonts.h"
 
 #if _WIN32 

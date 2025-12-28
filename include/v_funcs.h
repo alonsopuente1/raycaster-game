@@ -5,6 +5,12 @@
 
 #include <stdbool.h>
 
+/* v_funcs.h
+
+    contains all functions for vector operations
+
+*/
+
 extern vertex2d_t V_Make(const float a, const float b);
 extern vertex2d_t V_Add(const vertex2d_t a, const vertex2d_t b);
 extern vertex2d_t V_Sub(const vertex2d_t a, const vertex2d_t b);

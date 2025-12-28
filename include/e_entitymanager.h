@@ -5,6 +5,15 @@
 
 #include <stdbool.h>
 
+/* e_entitymanager.h
+
+    contains definition of entitymanager struct
+
+    this is used for handling interaction between entities
+    the player entity should be the first entity to be pushed
+    so that enemies can specifically target the player uniquely
+*/
+
 #define EM_MAX_ENTITIES 128
 
 typedef struct entitymanager_s

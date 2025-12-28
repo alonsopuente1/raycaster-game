@@ -5,6 +5,12 @@
 #include "w_buttons.h"
 #include "r_renderer.h"
 
+/* s_mainmenuscene.h
+
+    this scene is the main menu scene
+
+*/
+
 typedef enum menustate_e
 {
     MAINMENU,

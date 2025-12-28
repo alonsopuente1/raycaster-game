@@ -4,6 +4,12 @@
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 
+/* w_window.h
+
+    contains window definition and helper funcs
+
+*/
+
 typedef struct window_s
 {
     int             width;

@@ -3,6 +3,12 @@
 
 #include "p_player.h"
 
+/* p_funcs.h
+
+    contains functions for handling player state
+    
+*/
+
 typedef struct map_s map_t;
 
 // positive moves forward, negative backwards

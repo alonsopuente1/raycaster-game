@@ -11,6 +11,12 @@
 
 #include <SDL2/SDL_mixer.h>
 
+/* s_gamescene.h
+
+    this scene is the main gameplay scene
+
+*/
+
 #pragma pack(push, 1)
 typedef struct gamescene_s
 {

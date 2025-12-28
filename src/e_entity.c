@@ -81,7 +81,7 @@ bool E_IsEqual(entity_t a, entity_t b)
     return memcmp(&a, &b, sizeof(entity_t)) == 0;
 }
 
-void E_Update(entity_t* e, float deltaTime, map_t* m)
+void E_Update(entity_t* e, float deltaTime)
 {
     if(!e)
     {
@@ -94,6 +94,8 @@ void E_Update(entity_t* e, float deltaTime, map_t* m)
 
     if(e->think)
         e->think(e, deltaTime);
+
+    map_t* m = e->currentMap;
 
     e->vel = V_Add(e->vel, V_Mul(e->acc, deltaTime));
     if(V_GetMagnitude(e->vel) > e->maxSpeed)

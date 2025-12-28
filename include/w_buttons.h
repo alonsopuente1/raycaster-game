@@ -3,6 +3,19 @@
 
 #include <SDL2/SDL.h>
 
+/* w_buttons.h
+
+    contains struct and helper functions for implementing 
+    buttons on the window
+
+    currently the rresponse to a button click has to be handled 
+    within the scene
+
+    TODO: implement a callback function which handles response to button clicks
+    TODO: change button colour when mouse is hovering over button
+
+*/
+
 typedef struct renderer_s renderer_t;
 typedef struct texture_s texture_t;
 

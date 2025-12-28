@@ -3,6 +3,12 @@
 
 #include <SDL2/SDL_ttf.h>
 
+/* fonts.h
+
+    handles initialising fonts and creating text
+
+*/
+
 typedef struct texture_s texture_t;
 typedef struct renderer_s renderer_t;
 

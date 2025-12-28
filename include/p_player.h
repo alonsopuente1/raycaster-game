@@ -4,6 +4,14 @@
 #include "v_vert.h"
 #include "g_guns.h"
 
+/* p_player.h
+
+    contains the definition of the main player struct
+
+    this is the player that the user controls
+
+*/
+
 typedef enum movestateBitmask_e
 {
     MOVE_FORWARD        = 1 << 0,
