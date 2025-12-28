@@ -289,20 +289,21 @@ void TB_DeleteLastTexture(texturebank_t* texturebank)
         return;
     }
 
-    // there is at least 2 textures by this point so while loop is safe
+    // there is at least 2 textures by this point so the while 
+    // loop wont segfault
     struct texturenode_s* currentNode = texturebank->headNode;
 
     while(currentNode->nextNode->nextNode)
         currentNode = currentNode->nextNode;
 
-    T_FreeTexture(&currentNode->nextNode);
+    T_FreeTexture(&currentNode->nextNode->data);
     free(currentNode->nextNode);
     currentNode->nextNode = NULL;
 }
 
 /* PRIVATE FUNCTIONS */
 
-// returns NULL when cant allocate memory, 
+// returns 
 texture_t* TB_AddEmptyTexture(texturebank_t* texturebank)
 {
     struct texturenode_s* tail = TB_GetLastNode(texturebank);

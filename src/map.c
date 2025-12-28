@@ -15,7 +15,7 @@ void M_LoadMap(map_t* map, maploadargs_t* mapArgs, const char* filePath)
 {
     #define CLEANUP()   fclose(file);\
                         M_Free(map);\
-                        memset(mapArgs, sizeof(maploadargs_t), 0)
+                        memset(mapArgs, 0, sizeof(*mapArgs))
                         
     if(!map)
     {
@@ -262,9 +262,9 @@ bool M_RayCollision(map_t* map, vertex2d_t rayOrigin, vertex2d_t rayDir, RayHitD
     int mapX = (int)rayOrigin.x;
     int mapY = (int)rayOrigin.y;
 
-    vertex2d_t sideDist = { 0.f };
+    vertex2d_t sideDist = { 0 };
 
-    vertex2d_t deltaDist = { 0.f };
+    vertex2d_t deltaDist = { 0 };
     deltaDist.x = (rayDir.x == 0.f) ? FLT_MAX : fabsf(1.f / rayDir.x);
     deltaDist.y = (rayDir.y == 0.f) ? FLT_MAX : fabsf(1.f / rayDir.y);
     float wallDist = 0.f;

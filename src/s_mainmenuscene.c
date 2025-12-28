@@ -291,7 +291,7 @@ void MMS_RefreshMapList(mainMenuScene_t* scene, maingame_t* game)
 {
     if(scene->mapFiles)
     {
-        FreeDynamicArrayOfAllocatedElements(scene->mapFiles, scene->numMapFiles);
+        FreeDynamicArrayOfAllocatedElements((void**)scene->mapFiles, scene->numMapFiles);
         scene->mapFiles = NULL;
     }
 

@@ -24,7 +24,6 @@ void SetError(const char* msg)
     strncpy(errorMsg, msg, logmaxchr - 1);
     errorMsg[logmaxchr - 1] = '\0';
     set = true;
-    bool alsd;
 }
 
 const char* GetError()
