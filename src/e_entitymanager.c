@@ -1,6 +1,8 @@
 #include "e_entitymanager.h"
 
 #include "logger.h"
+#include "map.h"
+#include "v_funcs.h"
 
 entity_t* EM_PushEntity(entitymanager_t* em, entity_t* e)
 {
@@ -125,4 +127,53 @@ void EM_InitEntityManager(entitymanager_t* em)
         em->entities[i].active = false;
         em->entities[i].currentEM = em;
     }
+}
+
+entity_t* EM_Raycast(entitymanager_t* em, vertex2d_t origin, vertex2d_t dir, map_t* map, float* outDist)
+{
+    if(!em)
+        return NULL;
+
+    vertex2d_t normDir = V_Normalise(dir);
+
+    // find distance to wall first
+    vertex2d_t wallCollision = {0.f, 0.f};
+    RayHitDesc side = RAY_HIT_NONE;
+    float wallDist = INFINITY;
+    if(M_RayCollision(map, origin, dir, &side, &wallCollision))
+    {
+        wallDist = V_GetMagnitude(V_Sub(wallCollision, origin));
+    }
+
+    float bestT = INFINITY;
+    entity_t* best = NULL;
+
+    // simple radius-based hit test: if perpendicular distance from ray to entity <= hitRadius
+    const float hitRadius = 0.6f;
+
+    for(unsigned int i = 0; i < em->numEntities; i++)
+    {
+        entity_t* e = &em->entities[i];
+        if(!e->active)
+            continue;
+
+        vertex2d_t toEnt = V_Sub(e->pos, origin);
+        float t = V_DotProduct(toEnt, normDir);
+        if(t <= 0.f)
+            continue; // behind origin
+
+        vertex2d_t closest = V_Add(origin, V_Mul(normDir, t));
+        float perpDist = V_GetMagnitude(V_Sub(closest, e->pos));
+
+        if(perpDist <= hitRadius && t < wallDist && t < bestT)
+        {
+            bestT = t;
+            best = e;
+        }
+    }
+
+    if(outDist)
+        *outDist = best ? bestT : INFINITY;
+
+    return best;
 }

@@ -36,8 +36,12 @@ void GS_SetupScene(void* scene, maingame_t* game)
         "res/textures/env/wood.png",
         "res/textures/env/eagle.png",
         "res/textures/player.png",
-        "res/textures/guns/PIST2.png",
         "res/textures/guns/FIST.png",
+        "res/textures/guns/pistol/frame1.png",
+        "res/textures/guns/pistol/frame2.png",
+        "res/textures/guns/pistol/frame3.png",
+        "res/textures/guns/pistol/frame4.png",
+        "res/textures/guns/pistol/frame5.png",
         "res/textures/enemies/cacodemon.png"
     };
     
@@ -90,6 +94,15 @@ void GS_SetupScene(void* scene, maingame_t* game)
         }
     }
 
+    // setup weapons
+
+    gun_t pistol = { 0 };
+    pistol.gunTexture = TB_FindTextureByName(&gScene->renderer.textureBank, "frame1");    
+    pistol.fireRate = 500;
+    pistol.texScale = 0.5f;
+
+    gScene->player.currentGun = pistol;
+
     /* AUDIO LOADING */
 
     gScene->footstep1 = Mix_LoadWAV("res/sound/footsteps/1.wav");
@@ -122,6 +135,12 @@ void GS_HandleEvents(void* scene, maingame_t* game, SDL_Event* e)
     
     if(e->type == SDL_MOUSEMOTION)
         P_Rotate(player, (float)(e->motion.xrel) / 100);
+
+    if(e->type == SDL_MOUSEBUTTONDOWN)
+    {
+        if(e->button.button == SDL_BUTTON_LEFT)
+            P_Shoot(player, &gScene->map, &gScene->entityManager);
+    }
 
     if(e->type == SDL_USEREVENT)
         GS_HandleUserEvent(scene, game, e);
@@ -236,7 +255,7 @@ void GS_Draw(void* scene, maingame_t* game)
     }
 
     R_RenderPlayerGun(render, &gScene->player);
-    // R_RenderMinimap(render, &gScene->player, &gScene->entityManager, &gScene->map);
+    R_RenderMinimap(render, &gScene->player, &gScene->entityManager, &gScene->map);
 
     if(gScene->debugMinimapToggle)
     {

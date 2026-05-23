@@ -39,4 +39,8 @@ extern bool EM_RemoveEntity(entitymanager_t* em, entity_t* e);
 
 extern void EM_InitEntityManager(entitymanager_t* em);
 
+// raycast against entities in the entity manager
+// outDist: optional pointer to receive distance to hit (in world units)
+extern entity_t* EM_Raycast(entitymanager_t* em, vertex2d_t origin, vertex2d_t dir, map_t* map, float* outDist);
+
 #endif

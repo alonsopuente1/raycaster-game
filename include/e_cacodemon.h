@@ -15,5 +15,6 @@ typedef struct entity_s entity_t;
 extern entity_t CACOD_CreateCacodemonEntity(float x, float y);
 
 extern void CACOD_Walk(entity_t* e, float deltaTime);
+extern void CACOD_Attack(entity_t* e, float deltaTime);
 
 #endif

@@ -201,17 +201,7 @@ void R_RenderPlayerGun(renderer_t* render, player_t* player)
     texturebank_t*  texturebank = &render->textureBank;
 
     gun_t gun = player->currentGun;
-    texture_t* weaponTex = NULL;
-
-    switch(gun)
-    {
-    case FISTS:
-        weaponTex = TB_FindTextureByName(texturebank, "FIST");
-        break;
-    default:
-        weaponTex = NULL;
-        break;
-    }
+    texture_t* weaponTex = gun.gunTexture;
 
     if(!weaponTex)
     {
@@ -219,21 +209,17 @@ void R_RenderPlayerGun(renderer_t* render, player_t* player)
         return;
     }
 
+
+    // gun sway code
     float ratio = window->width / (2 * weaponTex->width); 
 
-    vertex2d_t newTexDim = {weaponTex->width * ratio, weaponTex->height * ratio};
+    vertex2d_t newTexDim = {weaponTex->width * ratio * gun.texScale, weaponTex->height * ratio * gun.texScale};
 
     SDL_FRect dstRect = {(float)window->width * 0.6f - newTexDim.x * 0.5f, window->height - newTexDim.y * 0.7f, newTexDim.x, newTexDim.y};
 
-    dstRect.x += sinf(player->gunSway) * weaponTex->width * 0.5f;
-    dstRect.y -= fabs(sinf(player->gunSway)) * weaponTex->height * 0.3f * ratio;
+    dstRect.x += sinf(player->gunSway) * weaponTex->width * 0.5f * gun.texScale;
+    dstRect.y -= fabs(sinf(player->gunSway)) * weaponTex->height * 0.3f * ratio * gun.texScale;
     
-    if(false)
-    {
-        SDL_SetRenderDrawColor(window->sdlRenderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-        SDL_RenderDrawRectF(window->sdlRenderer, &dstRect);
-    }
-
     SDL_RenderCopyF(window->sdlRenderer, weaponTex->data, NULL, &dstRect);
 }
 

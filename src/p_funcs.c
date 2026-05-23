@@ -2,6 +2,7 @@
 #include "v_funcs.h"
 #include "map.h"
 #include "m_game.h"
+#include "e_entitymanager.h"
 
 #include <stdbool.h>
 #include <SDL2/SDL_mixer.h>
@@ -66,6 +67,14 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     while(p->gunSway > acosf(-1) * 2)
         p->gunSway -= acosf(-1) * 2;
 
+    // update gun cooldown (dt in milliseconds)
+    if(p->currentGun.cooldown > 0)
+    {
+        p->currentGun.cooldown -= (int)dt;
+        if(p->currentGun.cooldown < 0)
+            p->currentGun.cooldown = 0;
+    }
+
 
     p->pos = V_Add(p->pos, V_Mul(p->vel, dt));
     vertex2d_t deltaPos = V_Sub(p->pos, oldPos);
@@ -80,4 +89,26 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     if(M_GetMapCell(m, (int)(oldPos.y + deltaPos.y) * m->mapWidth + (int)(oldPos.x)) > 0)
         p->pos.y -= deltaPos.y;
 
+}
+
+void P_Shoot(player_t* p, map_t* m, entitymanager_t* em)
+{
+    if(!p)
+        return;
+
+    // check cooldown
+    if(p->currentGun.cooldown > 0)
+        return;
+
+    vertex2d_t dir = V_AngToVec(p->viewAngle);
+    float hitDist = 0.f;
+    entity_t* hit = EM_Raycast(em, p->pos, dir, m, &hitDist);
+
+    if(hit)
+    {
+        EM_RemoveEntity(em, hit);
+    }
+
+    // reset cooldown to firerate
+    p->currentGun.cooldown = p->currentGun.fireRate;
 }
