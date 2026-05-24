@@ -1,7 +1,7 @@
 #ifndef __G_GUNS_H__
 #define __G_GUNS_H__
 
-#include "texture.h"
+#include "animatedtexture.h"
 
 /* g_guns.h
 
@@ -9,28 +9,22 @@
 
 */
 
-typedef struct weaponAnim_s
-{
-    int         currentFrame;
-    int         totalFrames;
-    float       frameDuration;
-    float       elapsedTime;
-    bool        isShooting;
-} weaponAnim_t;
-
 typedef struct gun_s
 {
-    texture_t*      gunTexture;
-    weaponAnim_t    anim;
+    animatedTexture_t   gunTexture;
 
     // firerate in ms
-    int             fireRate;
+    int                 fireRate;
     
-    // cooldown until can next shoot
-    int             cooldown;
+    // cooldown in ms 
+    int                 cooldown;
 
     // scaling value for the texture
-    float           texScale;
+    float               texScale;
+
+    bool                canShoot;
 } gun_t;
+
+extern void GUN_Update(gun_t* gun, float dtMs);
 
 #endif

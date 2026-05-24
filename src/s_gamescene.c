@@ -37,14 +37,17 @@ void GS_SetupScene(void* scene, maingame_t* game)
         "res/textures/env/eagle.png",
         "res/textures/player.png",
         "res/textures/guns/FIST.png",
+        "res/textures/enemies/cacodemon.png"
+    };
+    
+    static const char* pistolFrames[] = {
         "res/textures/guns/pistol/frame1.png",
         "res/textures/guns/pistol/frame2.png",
         "res/textures/guns/pistol/frame3.png",
         "res/textures/guns/pistol/frame4.png",
-        "res/textures/guns/pistol/frame5.png",
-        "res/textures/enemies/cacodemon.png"
+        "res/textures/guns/pistol/frame5.png"
     };
-    
+
     gScene->renderer = R_CreateRenderer(&game->window);
     if(!gScene->renderer.parentWindow)
     {
@@ -52,8 +55,11 @@ void GS_SetupScene(void* scene, maingame_t* game)
         G_ChangeScene(game, "MainMenu");
         return;
     }
-    
+
+    /*******************/
     /* TEXTURE LOADING */
+    /*******************/
+    
     int NUMTEXTURES = ((int)(sizeof(texturePaths) / sizeof(texturePaths[0])));
     
     for(int i = 0; i < NUMTEXTURES; i++)
@@ -72,7 +78,9 @@ void GS_SetupScene(void* scene, maingame_t* game)
         return;
     }
 
+    /***********************/
     /* ENTITY MANAGER INIT */
+    /***********************/
 
     EM_InitEntityManager(&gScene->entityManager);
 
@@ -80,7 +88,7 @@ void GS_SetupScene(void* scene, maingame_t* game)
     {
         entity_t e = CACOD_CreateCacodemonEntity(3.5f + i * 2.f, 3.5f);
         e.angle = V_DegToRad(180.f);
-        e.entityTex = TB_FindTextureByName(&gScene->renderer.textureBank, "cacodemon");
+        e.entityTex = TB_FindTextureByName(&gScene->renderer.textureBank, "res/textures/enemies/cacodemon.png");
         if(!e.entityTex)
         {
             LogMsg(ERROR, "failed to find cacodemon texture in texture bank\n");
@@ -97,9 +105,38 @@ void GS_SetupScene(void* scene, maingame_t* game)
     // setup weapons
 
     gun_t pistol = { 0 };
-    pistol.gunTexture = TB_FindTextureByName(&gScene->renderer.textureBank, "frame1");    
-    pistol.fireRate = 500;
+    
+    int numPistolFrames = sizeof(pistolFrames) / sizeof(pistolFrames[0]);
+
+    // load animated texture
+    for(int i = 0; i < numPistolFrames; i++)
+    {
+        const char* file = pistolFrames[i];
+
+        if(!TB_PushTexture(gScene->renderer.parentWindow, &gScene->renderer.textureBank, file))
+        {
+            LogMsg(WARN, "failed to load pistol frames");
+            G_ChangeScene(game, "MainMenu");
+            return;
+        }
+
+        if(!T_PushFrame(&pistol.gunTexture, TB_FindTextureByName(&gScene->renderer.textureBank, file)))
+        {
+            LogMsg(WARN, "failed to push pistol frame to animated texture");
+            G_ChangeScene(game, "MainMenu");
+            return;
+        }
+    }
+
+    pistol.fireRate = 750;
+    
+    pistol.gunTexture.frameTime = pistol.fireRate / numPistolFrames;
+    
     pistol.texScale = 0.5f;
+
+    // make the pistol ready to fire immediately on game start
+    pistol.cooldown = pistol.fireRate;
+    pistol.canShoot = true;
 
     gScene->player.currentGun = pistol;
 
@@ -210,15 +247,19 @@ void GS_Update(void* scene, maingame_t* game, float dt)
     if(!gScene->map.mapData)
         return;
 
+    // update player physics
     P_HandleState(&gScene->player, &gScene->map, dt);
 
+    // update entity physics
     EM_UpdateEntities(&gScene->entityManager, dt, &gScene->map);
 
+    // check if window still has focus, if not, free mouse
     if(SDL_GetWindowFlags(game->window.sdlWindow) & SDL_WINDOW_INPUT_FOCUS)
         SDL_SetRelativeMouseMode(SDL_TRUE);
     else
         SDL_SetRelativeMouseMode(SDL_FALSE);
 
+    // update footstep sounds
     if(gScene->player.footstepSoundCooldown > -1000.f)
         gScene->player.footstepSoundCooldown -= dt;
 
@@ -230,6 +271,9 @@ void GS_Update(void* scene, maingame_t* game, float dt)
         sound = !sound;
     }
 
+    GUN_Update(&gScene->player.currentGun, dt);
+
+    // update the minimap
     R_UpdateMinimap(&gScene->renderer, &gScene->player, &gScene->entityManager, &gScene->map);
 }
 
@@ -281,7 +325,17 @@ void GS_DestroyScene(void* scene, maingame_t* game)
     M_Free(&gScene->map);
 }
 
+
+
+
+/*********************/
 /* PRIVATE FUNCTIONS */
+/*********************/
+
+
+
+
+// handles any user defined SDL events
 void GS_HandleUserEvent(void* scene, maingame_t* game, SDL_Event* e)
 {
     if(!e)

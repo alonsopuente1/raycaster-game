@@ -28,7 +28,7 @@ texture_t* TB_AddAndCreateEmptyTexture(texturebank_t* texturebank, window_t* win
 
     if(width <= 0 || height <= 0)
     {
-        LogMsgf(ERROR, "passed invalid width or height: %ix%i", width, height);
+        LogMsgf(ERROR, "passed invalid width or height: (%ix%i)", width, height);
         return NULL;
     }
 
@@ -60,13 +60,10 @@ bool TB_PushTexture(window_t* window, texturebank_t* texturebank, const char* fi
         return false;
     }
 
-    char fileName[512] = { 0 };
-    fileNameFromPath(filepath, fileName, sizeof(fileName));
-
     // check if file has already been loaded
-    if(TB_FindTextureByName(texturebank, fileName))
+    if(TB_FindTextureByName(texturebank, filepath))
     {
-        LogMsgf(WARN, "texture with name '%s' has already been loaded into the texturebank", fileName);
+        LogMsgf(WARN, "texture with from filepath '%s' has already been loaded into the texturebank", filepath);
         return false;
     }
 

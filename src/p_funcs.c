@@ -67,14 +67,6 @@ void P_HandleState(player_t* p, map_t* m, float dt)
     while(p->gunSway > acosf(-1) * 2)
         p->gunSway -= acosf(-1) * 2;
 
-    // update gun cooldown (dt in milliseconds)
-    if(p->currentGun.cooldown > 0)
-    {
-        p->currentGun.cooldown -= (int)dt;
-        if(p->currentGun.cooldown < 0)
-            p->currentGun.cooldown = 0;
-    }
-
 
     p->pos = V_Add(p->pos, V_Mul(p->vel, dt));
     vertex2d_t deltaPos = V_Sub(p->pos, oldPos);
@@ -96,9 +88,11 @@ void P_Shoot(player_t* p, map_t* m, entitymanager_t* em)
     if(!p)
         return;
 
-    // check cooldown
-    if(p->currentGun.cooldown > 0)
+    if(!p->currentGun.canShoot)
         return;
+
+    p->currentGun.cooldown = 0;
+    p->currentGun.canShoot = false;
 
     vertex2d_t dir = V_AngToVec(p->viewAngle);
     float hitDist = 0.f;
@@ -109,6 +103,5 @@ void P_Shoot(player_t* p, map_t* m, entitymanager_t* em)
         EM_RemoveEntity(em, hit);
     }
 
-    // reset cooldown to firerate
-    p->currentGun.cooldown = p->currentGun.fireRate;
+    T_PlayAnimationOnce(&p->currentGun.gunTexture);
 }

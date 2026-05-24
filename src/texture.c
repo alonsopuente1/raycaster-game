@@ -8,7 +8,7 @@
 
 texture_t T_LoadTexture(window_t* window, const char* path)
 {
-    texture_t tex;
+    texture_t tex = { 0 };
     tex.data = IMG_LoadTexture(window->sdlRenderer, path);
     if(!tex.data)
     {
@@ -16,11 +16,15 @@ texture_t T_LoadTexture(window_t* window, const char* path)
         tex.width = 0;
         tex.height = 0;
         tex.data = NULL;
-        return tex;
+        return (texture_t){ 0 };
     }
 
-    fileNameFromPath(path, tex.name, sizeof(tex.name));
-    SDL_QueryTexture(tex.data, NULL, NULL, &tex.width, &tex.height);
+    strncpy(tex.name, path, TEX_MAX_FILEPATH_SIZE - 1);
+    if(SDL_QueryTexture(tex.data, NULL, NULL, &tex.width, &tex.height) < 0)
+    {
+        LogMsgf(WARN, "failed to query texture. SDL_ERROR: %s", SDL_GetError());
+        return (texture_t){ 0 };
+    }
 
     return tex;
 }
@@ -78,4 +82,9 @@ void T_FreeTexture(texture_t* tex)
     tex->width = 0;
     tex->height = 0;
     memset(tex->name, 0, sizeof(tex->name));
+}
+
+extern bool T_TextureInitialised(texture_t* tex)
+{
+    return tex && tex->data;
 }

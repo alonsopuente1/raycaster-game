@@ -13,6 +13,8 @@
 #include "texturebank.h"
 #include "r_renderer.h"
 
+#include "animatedtexture.h"
+
 #include "logger.h"
 /* FORWARD DECLARATIONS */
 texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t* em, map_t* map);
@@ -201,7 +203,7 @@ void R_RenderPlayerGun(renderer_t* render, player_t* player)
     texturebank_t*  texturebank = &render->textureBank;
 
     gun_t gun = player->currentGun;
-    texture_t* weaponTex = gun.gunTexture;
+    texture_t* weaponTex = gun.gunTexture.frames[gun.gunTexture.frameIndex];
 
     if(!weaponTex)
     {
@@ -337,11 +339,6 @@ texture_t* R_UpdateMinimap(renderer_t* render, player_t* player, entitymanager_t
         return NULL;
     }
     
-    if(!playerTex)
-    {
-        LogMsg(ERROR, "Failed to find target player texture\n");
-        return NULL;
-    }
 
     // clear minimap first
     SDL_SetRenderTarget(window->sdlRenderer, minimapTex->data);
@@ -460,7 +457,36 @@ bool R_RenderTexture(renderer_t* render, texture_t* tex, SDL_Rect src, SDL_Rect 
     return true;
 }
 
+bool R_RenderAnimatedTexture(renderer_t* render, animatedTexture_t* animTex, SDL_Rect src, SDL_Rect dst)
+{
+    if(!render)
+    {
+        LogMsg(WARN, "passed null ptr to renderer");
+        return false;
+    }
+
+    if(!animTex)
+    {
+        LogMsg(WARN, "passed null ptr to animTex");
+        return false;
+    }
+
+    if(SDL_RenderCopy(render->parentWindow->sdlRenderer, animTex->frames[animTex->frameIndex]->data, &src, &dst) < 0)
+    {
+        LogMsgf(WARN, "failed to render animated texture. SDL_ERROR: %s", SDL_GetError());
+        return false;
+    }
+
+    return true;
+}
+
+
+
+/*********************/
 /* PRIVATE FUNCTIONS */
+/*********************/
+
+
 
 // renders the map to a texture called "debugMinimap" in the renderer's texture bank
 // if the texture doesn't already exist, it gets created and added to the texture bank

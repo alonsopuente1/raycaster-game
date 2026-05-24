@@ -8,6 +8,7 @@
 #include "r_renderer.h"
 #include "e_entity.h"
 #include "e_entitymanager.h"
+#include "animatedtexture.h"
 
 #include <SDL2/SDL_mixer.h>
 

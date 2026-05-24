@@ -17,6 +17,8 @@
 
 /* ----   FORWARD DECLARATIONS      ---- */
 void G_HandleEvents(maingame_t* game);
+
+// dt in milliseconds
 void G_Update(maingame_t* game, float dt);
 void G_Draw(maingame_t* game);
 bool G_InitLibs();
@@ -30,6 +32,7 @@ void G_Run(maingame_t* game)
     while(game->running)
     {
         uint64_t newTime = SDL_GetTicks64();
+        // delta time in milliseconds
         uint64_t deltaTime = newTime - oldTime;
         oldTime = SDL_GetTicks64();
 

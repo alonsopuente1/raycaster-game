@@ -13,12 +13,14 @@
 
 */
 
+#define TEX_MAX_FILEPATH_SIZE 64
+
 typedef struct texture_s
 {
     int             width;
     int             height;
     SDL_Texture*    data;
-    char            name[32]; // name of the texture (stripped from file path or set by user if created with T_CreateBlankTexture)
+    char            name[TEX_MAX_FILEPATH_SIZE]; // name of the texture (stripped from file path or set by user if created with T_CreateBlankTexture)
 } texture_t;
 
 typedef struct window_s window_t;
@@ -31,5 +33,7 @@ extern texture_t T_CreateBlankTexture(window_t* window, const char* name, int wi
 extern bool T_SetTextureName(texture_t* tex, const char* name);
 // safe to pass null or texture with null data
 extern void T_FreeTexture(texture_t* tex);
+
+extern bool T_TextureInitialised(texture_t* tex);
 
 #endif 

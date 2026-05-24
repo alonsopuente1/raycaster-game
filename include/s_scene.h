@@ -51,15 +51,20 @@ typedef struct maingame_s maingame_t;
 
 // Function pointer typedefs for scene methods
 
-// first parameter is a pointer to the user-defined scene struct
+// first parameter is a pointer to the user-defined scene struct 
 typedef void (*SetupFunc)(void*, maingame_t*);
-// first parameter is a pointer to the user-defined scene struct
+
+// first parameter is a pointer to the user-defined scene struct 
 typedef void (*HandleEventsFunc)(void*, maingame_t*, SDL_Event*);
+
 // first parameter is a pointer to the user-defined scene struct
+// second parameter is delta time in milliseconds
 typedef void (*UpdateFunc)(void*, maingame_t*, float);
-// first parameter is a pointer to the user-defined scene struct
+
+// first parameter is a pointer to the user-defined scene struct 
 typedef void (*DrawFunc)(void*, maingame_t*);
-// first parameter is a pointer to the user-defined scene struct
+
+// first parameter is a pointer to the user-defined scene struct 
 typedef void (*DestroyFunc)(void*, maingame_t*);
 
 typedef struct scene_s
@@ -81,7 +86,8 @@ extern scene_t S_CreateScene(maingame_t* parentGame, void* scene, unsigned int s
 
 extern void S_CallSetup(scene_t* scene);
 extern void S_CallHandleEvents(scene_t* scene, SDL_Event* event);
-extern void S_CallUpdate(scene_t* scene, float dt);
+
+extern void S_CallUpdate(scene_t* scene, float dtMs);
 extern void S_CallDraw(scene_t* scene);
 extern void S_CallDestroy(scene_t* scene);
 
