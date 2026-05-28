@@ -36,6 +36,9 @@ typedef struct entity_s
     vertex2d_t          vel;
     vertex2d_t          pos;
 
+    // hitbox dimensions where the entity is in the centre
+    vertex2d_t          hitbox;
+
     float               angle;
     float               maxSpeed;
 

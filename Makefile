@@ -1,4 +1,5 @@
 CC 			= gcc
+CPP			= g++
 
 CFLAGS		= -I./include -Wextra -Wall -Wno-unused-parameter
 
@@ -24,6 +25,9 @@ RayCaster: $(OBJS)
 	$(CC) -Wall -g $(OBJS) $(LINKFLAGS) -o RayCaster
 
 $(OUT)/%.o: $(SRC)/%.c
+	$(CC) -Wall -g $(CFLAGS) -c $< -o $@
+
+$(OUT)/%.o: $(SRC)/%.cpp
 	$(CC) -Wall -g $(CFLAGS) -c $< -o $@
 
 $(OUT):

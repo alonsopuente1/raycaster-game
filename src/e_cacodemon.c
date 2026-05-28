@@ -5,6 +5,8 @@
 
 #include "logger.h"
 
+#define CheckEntityPointerValid(e) if(!e) { LogMsg(WARN, "passed null ptr to cacodemon entity"); return; }
+
 entity_t CACOD_CreateCacodemonEntity(float x, float y)
 {
     entity_t e = {
@@ -22,13 +24,10 @@ entity_t CACOD_CreateCacodemonEntity(float x, float y)
     return e;
 }
 
+// dt in ms
 void CACOD_Walk(entity_t* e, float deltaTime)
 {
-    if(!e)
-    {
-        LogMsg(WARN, "passed null ptr to cacodemon entity\n");
-        return;
-    }
+    CheckEntityPointerValid(e);
 
     // simple AI: move forward in the direction it's facing
     vertex2d_t dir = {
@@ -41,15 +40,18 @@ void CACOD_Walk(entity_t* e, float deltaTime)
     e->acc = dir;
 }
 
-void CACOD_Attack(entity_t* e, float deltaTime)
+void CACOD_Wander(entity_t* e, float dt)
 {
-    if(!e)
-    {
-        LogMsg(ERROR, "passed null ptr to entity\n");
-        return;
-    }
+    
+    CheckEntityPointerValid(e);
 
     
+}
 
-    return; 
+void CACOD_Attack(entity_t* e, float deltaTime)
+{
+    
+    CheckEntityPointerValid(e);
+
+    
 }

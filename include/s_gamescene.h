@@ -44,6 +44,7 @@ typedef struct gamescene_s
 
 extern void GS_SetupScene(void* scene, maingame_t* game);
 extern void GS_HandleEvents(void* scene, maingame_t* game, SDL_Event* e);
+// dt in ms
 extern void GS_Update(void* scene, maingame_t* game, float dt);
 extern void GS_Draw(void* scene, maingame_t* game);
 extern void GS_DestroyScene(void* scene, maingame_t* game);
