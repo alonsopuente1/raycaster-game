@@ -1,6 +1,9 @@
 CC 			= gcc
 CPP			= g++
 
+# C++ flags (keep C flags unchanged)
+CXXFLAGS	= -I./include++ -Wextra -Wall -Wno-unused-parameter
+
 CFLAGS		= -I./include -Wextra -Wall -Wno-unused-parameter
 
 LINKFLAGS 	=
@@ -14,12 +17,21 @@ endif
 OUT			= build
 SRC			= src
 
+SRCPP = src++
+
 # finding all .c files and forming target .o filenames
 C_FILES := $(subst src/,$(empty),$(foreach dir,$(SRC),$(wildcard $(dir)/*.c)))
-OBJS := \
+COBJS := \
 	$(foreach file,$(C_FILES),$(OUT)/$(file:.c=.o))
 
-all: | $(OUT) RayCaster 
+CPP_FILES := $(subst src++/,$(empty),$(wildcard $(SRCPP)/*.cpp))
+CPPOBJS := \
+	$(foreach file,$(CPP_FILES),$(OUT)/$(file:.cpp=.opp))
+
+# ensure OBJS points to the C object list (preserve original C build)
+OBJS := $(COBJS)
+
+all: RayCaster RayCaster_cpp
 
 RayCaster: $(OBJS)
 	$(CC) -Wall -g $(OBJS) $(LINKFLAGS) -o RayCaster
@@ -27,11 +39,14 @@ RayCaster: $(OBJS)
 $(OUT)/%.o: $(SRC)/%.c
 	$(CC) -Wall -g $(CFLAGS) -c $< -o $@
 
-$(OUT)/%.o: $(SRC)/%.cpp
-	$(CC) -Wall -g $(CFLAGS) -c $< -o $@
+$(OUT)/%.opp: $(SRCPP)/%.cpp
+	$(CPP) -Wall -g $(CXXFLAGS) -c $< -o $@
+
+RayCaster_cpp: $(CPPOBJS)
+	$(CPP) -Wall -g $(CPPOBJS) $(LINKFLAGS) -o RayCaster_cpp
 
 $(OUT):
 	mkdir -p $(OUT)
 
 clean:
-	rm $(OUT)/*.o
+	rm -f $(OUT)/*.o RayCaster RayCaster_cpp

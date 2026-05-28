@@ -15,6 +15,9 @@ namespace CastEngine
 
     // forward decleration
     class Window;
+
+    /// @brief texture class for handling textures in the engine
+    /// MUST be created with a window
     class Texture 
     {
 
@@ -36,13 +39,12 @@ namespace CastEngine
         /// @brief textures have to be attached to a window
         ///     the textures only work for that window
         /// @param window window to attach to
-        /// @param file 
+        /// @param file file path to the image to load
         Texture(Window& window, const std::string& file);
         
         
-        /// @brief textures have to be attached to a window
-        ///     the textures only work for that window
-        ///     creates a blank texture of the dimensions passed and 
+        /// @brief textures have to be attached to a window.
+        /// @brief the textures only work for the window attached  
         /// @param window window to attach to
         /// @param name name to give to texture
         /// @param width width of the texture 
@@ -64,15 +66,30 @@ namespace CastEngine
         /// @return 
         void SetTextureName(const std::string& newName);
 
-        /// @brief destroys and resets all member variables of Texture
+        const std::string& GetTextureName() const;
+
+        /// @brief destroys the texture but keeps window attached
         void Destroy();
         
         /// @brief returns if texture is initialised or not
         /// @return true if initialised false if not
-        bool TextureInitialised() const;
+        bool IsInitialised() const;
 
         /// @brief loads a texture from image file. replaces any existing texture
         /// @param filePath path to image file
         bool LoadTexture(const std::string& filePath);
+                
+        /// @brief getter method for internal SDL texture
+        /// @return NULL if not initialised
+        SDL_Texture* GetTexture() const;
+
+        /// @brief destroys current texture and replaces with blank texture
+        /// @param pWidth width of new texture
+        /// @param pHeight height of new texture;
+        /// @return true if successful, false if not
+        bool CreateBlankTexture(const std::string& pName, int pWidth, int pHeight);
+
+        Window& GetAttachedWindow() const;
+        void SetAttachedWindow(Window& pWindow);
     };
 };
