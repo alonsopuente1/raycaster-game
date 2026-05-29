@@ -57,7 +57,7 @@ namespace CastEngine
         return true;
     }
 
-    int& Map::operator[] (int i)
+    const int& Map::operator[] (int i) const
     {
         return mMapData[i];
     }

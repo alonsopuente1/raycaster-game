@@ -9,6 +9,7 @@ struct vec2d
     // normal constructors
 
     vec2d();
+    vec2d(float a);
     vec2d(float _x, float _y);
 
     // copy/move assignment/constructors

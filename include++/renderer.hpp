@@ -11,6 +11,8 @@ namespace CastEngine
     class Gun;
     class EntityManager;
 
+    /// @brief a renderer for rendering player views, entities and more
+    /// should be created alongside a Window object
     class Renderer
     {
 
@@ -20,12 +22,18 @@ namespace CastEngine
 
         std::vector<float> depthBuffer;
 
-        TextureBank mTexBank;
-
+        void ResetDepthBuffer();
+        
     public:
-
+        
         Renderer(Window& window);
         ~Renderer();
+        
+        TextureBank texBank;
+
+        inline Window& GetWindow() { return mWindow; }
+
+        bool RenderTexture(const Texture& tex, SDL_Rect src, SDL_Rect dst);
 
         void RenderPlayerView(const Player& pPlayer, const Map& pMap);
         void RenderGun(const Gun& pGun);
@@ -39,6 +47,8 @@ namespace CastEngine
         void Present();
 
         void Destroy();
+
+        Window& GetWindow() const;
 
     };
 

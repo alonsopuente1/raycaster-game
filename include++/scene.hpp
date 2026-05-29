@@ -5,16 +5,23 @@
 namespace CastEngine
 {
 
+    class Game;
     /// @brief scene class interface to implement own scenes
     class IScene {
     
+    protected:
+
+        Game& mParentGame;
+
     public:
 
-        virtual void Setup();
-        virtual void HandleEvents(SDL_Event& e);
-        virtual void Update(float dtMs);
-        virtual void Draw();
-        virtual void Destroy();
+        IScene(Game& pGame) : mParentGame(pGame) {} 
+        
+        virtual void Setup() = 0;
+        virtual void HandleEvents(SDL_Event e) = 0;
+        virtual void Update(float dtMs) = 0;
+        virtual void Draw() = 0;
+        virtual void Destroy() = 0;
 
     };
 

@@ -17,6 +17,11 @@ namespace CastEngine
         return NULL;
     }
 
+    void TextureBank::FreeAll()
+    {
+        mTextures.clear();
+    }
+
     void TextureBank::RemoveByName(const std::string &pName)
     {
         for(int i = 0; i < mTextures.size(); i++)
@@ -34,5 +39,8 @@ namespace CastEngine
         return mTextures.size();
     }
 
-
+    void TextureBank::PushTexture(Texture &&tex)
+    {
+        mTextures.push_back(std::move(tex));
+    }
 };

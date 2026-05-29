@@ -1,21 +1,24 @@
 #pragma once
 
 #include "scene.hpp"
+#include "renderer.hpp"
+#include "window.hpp"
 
-namespace CastEngine
+
+class GameScene : public CastEngine::IScene
 {
 
-    class GameScene : public IScene
-    {
+public:
 
-    public:
+    void Setup() override;
+    void HandleEvents(SDL_Event e) override;
+    void Update(float dtMs) override;
+    void Draw() override;
+    void Destroy() override;
 
-        void Setup() override;
-        void HandleEvents(SDL_Event& e) override;
-        void Update(float dtMs) override;
-        void Draw() override;
-        void Destroy() override;
 
-    };
+private:
+
+    
 
 };

@@ -21,6 +21,7 @@ namespace CastEngine
         /// @return size of vector
         inline size_t BankSize() const;
 
+        void PushTexture(Texture&& tex);
 
     private:
 
