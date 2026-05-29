@@ -42,6 +42,15 @@ namespace CastEngine
         /// @param file file path to the image to load
         Texture(Window& window, const std::string& file);
         
+        // delete copy constructor
+        Texture(const Texture&) = delete;
+
+        // delete copy assignment
+        Texture& operator=(const Texture&) = delete;
+
+        // move constructors
+        Texture(Texture&& other);
+        Texture& operator=(Texture&& tex);
         
         /// @brief textures have to be attached to a window.
         /// @brief the textures only work for the window attached  
@@ -71,8 +80,8 @@ namespace CastEngine
         /// @brief destroys the texture but keeps window attached
         void Destroy();
         
-        /// @brief returns if texture is initialised or not
-        /// @return true if initialised false if not
+        /// @brief returns if texture exists or not
+        /// @return true if does exist, false if not
         bool IsInitialised() const;
 
         /// @brief loads a texture from image file. replaces any existing texture
@@ -91,5 +100,6 @@ namespace CastEngine
 
         Window& GetAttachedWindow() const;
         void SetAttachedWindow(Window& pWindow);
+
     };
 };

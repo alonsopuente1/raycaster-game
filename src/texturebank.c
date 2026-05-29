@@ -3,6 +3,7 @@
 #include "logger.h"
 #include "w_window.h"
 #include "util.h"
+#include "texturebank.hpp"
 
 /* FORWARD DECLERATIONS */
 

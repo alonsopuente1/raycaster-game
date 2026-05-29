@@ -69,6 +69,9 @@ namespace CastEngine
         /// @brief checks if the window is already initialised or not
         /// @return true if initialised, false if not
         bool IsInitialised() const;
+
+        bool operator==(Window& other) const;
+        bool operator!=(Window& other) const;
     };
 
 };

@@ -9,8 +9,6 @@
 namespace CastEngine
 {
  
-    #define CHECKTEX(texture) if(texture == NULL) { LogMsg(WARN, "passed null ptr to texture"); return;}
-
     Texture::Texture(Window& window) : mWindow(window), mSDLTex(NULL), mName("")
     {}
     
@@ -18,7 +16,28 @@ namespace CastEngine
     {
         LoadTexture(file);
     }
-    
+
+    Texture::Texture(Texture &&other) : mWindow(other.mWindow), mSDLTex(other.mSDLTex), mName(other.mName)
+    {
+        other.mSDLTex = NULL;
+        other.mName = "";
+    }
+
+    Texture &Texture::operator=(Texture &&tex)
+    {
+        if(this == &tex)
+            return *this;
+
+        if(mSDLTex)
+            SDL_DestroyTexture(mSDLTex);
+
+        mSDLTex = tex.mSDLTex;
+
+        tex.mSDLTex = NULL;
+
+        return *this;
+    }
+
     Texture::Texture(Window& window, const std::string& name, int width, int height) : mWindow(window), mSDLTex(NULL), mName("")
     {
         CreateBlankTexture(name, width, height);
@@ -60,7 +79,7 @@ namespace CastEngine
     
     bool Texture::IsInitialised() const
     {
-        return mSDLTex != NULL && mWindow.IsInitialised();
+        return mSDLTex != NULL;
     }
 
     void Texture::SetTextureName(const std::string& newName)
@@ -75,14 +94,7 @@ namespace CastEngine
 
     bool Texture::LoadTexture(const std::string& filePath)
     {
-        
-        if(!mWindow.IsInitialised())
-        {
-            LogMsg(ERROR, "attempting to create texture on uninitialised window");
-            return false;
-        }
-        if(IsInitialised())
-            Destroy();
+        Destroy();
 
         mSDLTex = IMG_LoadTexture(mWindow.GetRenderer(), filePath.c_str());
 
@@ -118,7 +130,7 @@ namespace CastEngine
         if(IsInitialised())
             Destroy();
 
-        
+        mSDLTex = newTex;        
 
         return true;
     }
@@ -130,13 +142,12 @@ namespace CastEngine
     void Texture::SetAttachedWindow(Window& pWindow)
     {
         if(IsInitialised())
-        {
             LogMsgf(WARN, "setting new attached window without destroying old texture (%s)... destroying texture...", mName.c_str());
-            Destroy();
-        }
+
+        Destroy();
 
         mWindow = pWindow;
     }
 
-#undef CHECKTEX 
+
 };
