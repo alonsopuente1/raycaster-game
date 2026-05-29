@@ -16,8 +16,23 @@ namespace CastEngine
 
         return NULL;
     }
-    size_t TextureBank::NumTextures() const
+
+    void TextureBank::RemoveByName(const std::string &pName)
+    {
+        for(int i = 0; i < mTextures.size(); i++)
+        {
+            if(mTextures[i].GetTextureName() == pName)
+            {
+                mTextures.erase(mTextures.begin() + i);
+                return;
+            }
+        }
+    }
+
+    inline size_t TextureBank::BankSize() const
     {
         return mTextures.size();
     }
+
+
 };

@@ -1,5 +1,6 @@
 #include "window.hpp"
 #include "texture.hpp"
+#include "map.hpp"
 
 #include "logger.hpp"
 
@@ -22,6 +23,13 @@ int main(int argc, char** argv)
         LogMsg(ERROR, "failed to load texture"); 
         return -1;
     }
+
+    CastEngine::Map myMap;
+
+    CastEngine::Map::LoadArgs args;
+    myMap.LoadMap("res/maps/map1.sdm", args);
+
+    myMap.print();
 
     while(running)
     {

@@ -49,4 +49,4 @@ $(OUT):
 	mkdir -p $(OUT)
 
 clean:
-	rm -f $(OUT)/*.o RayCaster RayCaster_cpp
+	rm -f $(OUT)/*.o $(OUT)/*.opp RayCaster RayCaster_cpp

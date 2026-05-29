@@ -17,7 +17,9 @@ namespace CastEngine
         void FreeAll();
         void RemoveByName(const std::string& pName);
 
-        size_t NumTextures() const;
+        /// @brief size of the internal vector of Texture's
+        /// @return size of vector
+        inline size_t BankSize() const;
 
 
     private:
